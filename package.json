@@ -1,0 +1,32 @@
+{
+  "name": "keyboard-wtf-agent-dashboard",
+  "version": "2.0.0-hackathon",
+  "private": true,
+  "type": "module",
+  "description": "Cloud Run dashboard and Gemini/Elastic agent backend for keyboard.wtf.2",
+  "scripts": {
+    "dev": "tsx watch site/src/server.ts",
+    "build": "tsc && node site/scripts/copy-public.mjs",
+    "start": "node site/dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.17.0",
+    "@google/adk": "^1.2.0",
+    "@google/genai": "^2.8.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.8"
+  }
+}

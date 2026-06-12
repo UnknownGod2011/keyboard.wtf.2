@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>keyboard.wtf - Jarvis for your PC</title>
+  <style>
+    :root {
+      --bg: #f7f8f6;
+      --ink: #111513;
+      --muted: #66716b;
+      --line: #d9ded8;
+      --panel: #ffffff;
+      --green: #1f7a4d;
+      --blue: #245b96;
+      --amber: #aa6b12;
+      --red: #b42318;
+      --soft: #eef2ef;
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-size: 14px; line-height: 1.45; letter-spacing: 0; }
+    button, input, select, textarea { font: inherit; }
+    button {
+      min-height: 34px;
+      border: 1px solid var(--ink);
+      border-radius: 6px;
+      background: var(--ink);
+      color: white;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+    button.secondary { background: white; color: var(--ink); border-color: var(--line); }
+    button.danger { background: var(--red); border-color: var(--red); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header { border-bottom: 1px solid var(--line); background: #eef3ef; }
+    nav {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-weight: 800; font-size: 17px; }
+    .nav-note { color: var(--muted); font-size: 13px; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      gap: 36px;
+      align-items: center;
+      padding: 34px 0 40px;
+    }
+    h1 { margin: 0; font-size: 48px; line-height: 1; letter-spacing: 0; }
+    .lead { color: #3b4540; font-size: 18px; max-width: 680px; margin: 14px 0 0; }
+    .hero-line { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #34413a;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .dot.ok { background: var(--green); }
+    .dot.warn { background: var(--amber); }
+    .dot.err { background: var(--red); }
+    .diagram {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.8);
+      border-radius: var(--radius);
+    }
+    .diagram-row { display: grid; grid-template-columns: 1fr 24px 1fr; align-items: center; gap: 8px; }
+    .node {
+      min-height: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: white;
+      padding: 10px;
+    }
+    .node strong { font-size: 13px; }
+    .node span { color: var(--muted); font-size: 12px; }
+    .arrow { text-align: center; color: var(--blue); font-weight: 800; }
+    main { padding: 26px 0 52px; }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .status {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 14px;
+    }
+    .status h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; }
+    .status p { margin: 7px 0 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(330px, .85fr);
+      gap: 18px;
+      align-items: start;
+    }
+    section {
+      border-top: 1px solid var(--line);
+      padding: 20px 0;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 16px;
+    }
+    .panel h2 { margin: 0 0 3px; font-size: 18px; }
+    .hint { color: var(--muted); margin: 0 0 14px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > * { flex: 1; }
+    .row .fit { flex: 0 0 auto; }
+    .list { display: grid; gap: 8px; margin-top: 12px; }
+    .item {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+    .item:first-child { border-top: 0; padding-top: 0; }
+    .item-title { font-weight: 720; }
+    .item-meta { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+    .item-content { margin-top: 5px; color: #2e3833; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+    .tab {
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+      min-height: 30px;
+      font-size: 12px;
+    }
+    .tab.active { background: var(--blue); border-color: var(--blue); color: white; }
+    .chat-log {
+      min-height: 160px;
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fbfcfb;
+      margin-bottom: 10px;
+    }
+    .msg { margin-bottom: 10px; }
+    .msg strong { display: block; font-size: 12px; color: var(--blue); }
+    .notice {
+      border-left: 4px solid var(--amber);
+      background: #fff8ed;
+      padding: 10px 12px;
+      color: #5c3a0d;
+      margin: 10px 0;
+    }
+    .compliance {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .compliance div {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+    code { font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+    @media (max-width: 880px) {
+      .hero, .grid, .status-grid, .compliance { grid-template-columns: 1fr; }
+      h1 { font-size: 36px; }
+      .diagram-row { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="shell">
+      <div class="brand">keyboard.wtf</div>
+      <div class="nav-note">Google Cloud Rapid Agent Hackathon / Elastic track</div>
+    </nav>
+    <div class="shell hero">
+      <div>
+        <h1>Jarvis for your PC with Elastic Super Memory.</h1>
+        <p class="lead">A Gemini-powered second brain that remembers useful computer context, plans safe actions, and hands execution to a paired Windows desktop bridge.</p>
+        <div class="hero-line">
+          <span class="chip"><span class="dot ok"></span>Gemini brain</span>
+          <span class="chip"><span class="dot ok"></span>Elastic memory</span>
+          <span class="chip"><span class="dot warn"></span>Local bridge hands</span>
+          <span class="chip"><span class="dot ok"></span>Cloud Run dashboard</span>
+        </div>
+      </div>
+      <div class="diagram" aria-label="Architecture diagram">
+        <div class="diagram-row">
+          <div class="node"><strong>Cloud Run Dashboard</strong><span>Judge-facing web app</span></div>
+          <div class="arrow">-&gt;</div>
+          <div class="node"><strong>Gemini Agent</strong><span>Plans and reasons</span></div>
+        </div>
+        <div class="diagram-row">
+          <div class="node"><strong>Elastic MCP + ES</strong><span>Super memory/search</span></div>
+          <div class="arrow">&lt;-&gt;</div>
+          <div class="node"><strong>Local Bridge</strong><span>Authenticated PC actions</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="status-grid">
+      <div class="status"><h3><span id="geminiDot" class="dot"></span>Gemini</h3><p id="geminiStatus">Checking...</p></div>
+      <div class="status"><h3><span id="elasticDot" class="dot"></span>Elastic</h3><p id="elasticStatus">Checking...</p></div>
+      <div class="status"><h3><span id="bridgeDot" class="dot"></span>Desktop bridge</h3><p id="bridgeStatus">Checking...</p></div>
+      <div class="status"><h3><span class="dot ok"></span>Active user</h3><p><span id="activeUser">...</span><br><span id="activeDevice">...</span><br><span id="memoryCount">0 memories</span></p></div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <section class="panel">
+          <h2>Demo Command Panel</h2>
+          <p class="hint">Commands use real Elastic memory. Desktop actions run only when the local bridge is paired and online.</p>
+          <div class="chat-log" id="chatLog"></div>
+          <textarea id="commandInput" placeholder="Remember this as my to-do link: https://example.com/todo"></textarea>
+          <div class="row" style="margin-top:8px">
+            <select id="demoCommand">
+              <option value="">Choose a demo command...</option>
+              <option>Remember this as my to-do link: https://example.com/todo</option>
+              <option>Open my to-do link.</option>
+              <option>What did I work on today?</option>
+              <option>Search my saved actions.</option>
+              <option>What failed last time?</option>
+              <option>Use what you remember about this project.</option>
+              <option>Remember this hackathon deadline: June 11, 2026 at 2:00 PM PT.</option>
+              <option>Find the last thing I saved about Elastic.</option>
+            </select>
+            <button class="fit secondary" id="useDemo">Use</button>
+            <button class="fit" id="sendCommand">Send</button>
+          </div>
+          <div class="notice" id="memoryUsed">Used 0 relevant memories from Elastic.</div>
+          <div class="item-meta" id="lastRetrieved">No memories used in the current answer.</div>
+        </section>
+
+        <section class="panel">
+          <h2>Elastic Super Memory</h2>
+          <p class="hint">Every query is scoped to the active <code>user_id</code>. No global memory search is exposed.</p>
+          <div class="row">
+            <input id="memorySearch" placeholder="Search memory, actions, failures...">
+            <select id="memoryPrivacy" class="fit" title="Privacy level for manually saved memory">
+              <option value="normal">normal</option>
+              <option value="private">private</option>
+              <option value="sensitive">sensitive</option>
+            </select>
+            <button class="fit secondary" id="searchMemory">Search</button>
+            <button class="fit" id="saveMemory">Save Memory</button>
+          </div>
+          <div class="tabs" id="typeFilters"></div>
+          <div class="list" id="memoryList"></div>
+          <div class="row" style="margin-top:12px">
+            <button class="secondary" id="refreshMemory">Refresh</button>
+            <button class="secondary" id="testElastic">Test Elastic</button>
+            <button class="danger" id="clearMemory">Clear Current User Memory</button>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <h2>Settings</h2>
+          <p class="hint">Gemini via Google Cloud Agent Platform is the active reasoning model for this hackathon build.</p>
+          <div class="row">
+            <input id="userId" placeholder="user_id">
+            <input id="deviceId" placeholder="device_id">
+          </div>
+          <div class="row" style="margin-top:8px">
+            <input id="bridgeToken" placeholder="Optional local bridge pairing token">
+            <button class="fit secondary" id="saveSession">Save</button>
+          </div>
+          <label class="row" style="margin-top:10px; justify-content:flex-start">
+            <input id="memorySavingEnabled" type="checkbox" style="width:auto; flex:0 0 auto" checked>
+            <span>Save useful chat summaries to Elastic</span>
+          </label>
+          <div class="notice">Demo user selection is not authentication. Use one trusted demo user per deployed instance.</div>
+          <div class="item">
+            <div class="item-title">Elastic indices</div>
+            <div class="item-meta" id="indexNames">Loading...</div>
+          </div>
+          <div class="item">
+            <div class="item-title">Elastic hosts</div>
+            <div class="item-meta" id="elasticHosts">Loading...</div>
+          </div>
+          <div class="item">
+            <div class="item-title">Google Cloud</div>
+            <div class="item-meta" id="cloudInfo">Loading...</div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <button class="secondary" id="testGemini">Test Gemini</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Action History</h2>
+          <p class="hint">Completed, failed, confirmation, and demo-mode actions are logged to Elastic.</p>
+          <div class="list" id="actionList"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Failed Actions</h2>
+          <p class="hint">Failures are stored as failure memory for later recall.</p>
+          <div class="list" id="failureList"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Hackathon Compliance</h2>
+          <div class="compliance" id="compliancePanel"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Local Bridge Setup</h2>
+          <p class="hint">Run the Windows tray app on the demo PC. Open its local settings, copy the bridge pairing token, and paste it above. If offline, this dashboard still shows real Elastic memory and labels desktop actions as demo mode.</p>
+          <button class="secondary" id="testBridge">Test Bridge</button>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const memoryTypes = ["all", "semantic_memory", "link_memory", "chat_memory", "action_memory", "failure_memory", "preference_memory", "document_memory", "episodic_memory"];
+    const state = {
+      userId: localStorage.getItem("kwtf.userId") || "",
+      deviceId: localStorage.getItem("kwtf.deviceId") || "",
+      bridgeToken: localStorage.getItem("kwtf.bridgeToken") || "",
+      memorySavingEnabled: localStorage.getItem("kwtf.memorySavingEnabled") !== "false",
+      type: "all"
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function headers() {
+      const h = { "content-type": "application/json" };
+      if (state.userId) h["x-keyboard-user-id"] = state.userId;
+      if (state.deviceId) h["x-keyboard-device-id"] = state.deviceId;
+      if (state.bridgeToken) h["x-bridge-token"] = state.bridgeToken;
+      return h;
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && !data.ok) data.error = data.error || res.statusText;
+      return data;
+    }
+
+    function setDot(id, ok, warn = false) {
+      $(id).className = "dot " + (ok ? "ok" : warn ? "warn" : "err");
+    }
+
+    function item(doc, withDelete = false) {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="row">
+          <div>
+            <div class="item-title">${escapeHtml(doc.title || doc.action || "Untitled")}</div>
+            <div class="item-meta">${escapeHtml(doc.type || "")} / ${escapeHtml(doc.created_at || doc.Timestamp || "")}</div>
+          </div>
+          ${withDelete ? `<button class="fit secondary" data-delete="${escapeHtml(doc.id)}">Delete</button>` : ""}
+        </div>
+        <div class="item-content">${escapeHtml(doc.summary || doc.content || doc.Detail || "")}</div>
+        ${doc.url ? `<div class="item-meta">${escapeHtml(doc.url)}</div>` : ""}
+      `;
+      return div;
+    }
+
+    async function loadStatus() {
+      const data = await api("/api/status");
+      const cfg = data.config || {};
+      state.userId ||= cfg.defaultUserId;
+      state.deviceId ||= cfg.defaultDeviceId;
+      $("userId").value = state.userId;
+      $("deviceId").value = state.deviceId;
+      $("bridgeToken").value = state.bridgeToken;
+      $("memorySavingEnabled").checked = state.memorySavingEnabled;
+      $("activeUser").textContent = state.userId;
+      $("activeDevice").textContent = state.deviceId;
+      $("memoryCount").textContent = `${data.memoryCount || 0} memories`;
+      setDot("geminiDot", cfg.geminiConfigured);
+      $("geminiStatus").textContent = cfg.geminiConfigured ? cfg.geminiModel : "Server-side GEMINI_API_KEY missing.";
+      setDot("elasticDot", data.elastic?.connected, data.elastic?.configured);
+      $("elasticStatus").textContent = data.elastic?.message || "Unknown";
+      const bridge = await testLocalBridge();
+      setDot("bridgeDot", bridge.bridgeOnline, bridge.demoMode);
+      $("bridgeStatus").textContent = bridge.message;
+      $("indexNames").textContent = Object.values(cfg.indices || {}).join(", ");
+      $("elasticHosts").textContent = [cfg.elasticsearchHost, cfg.kibanaHost].filter(Boolean).join(" / ") || "Not configured";
+      $("cloudInfo").textContent = `${cfg.googleCloudProjectId} / ${cfg.googleCloudRunRegion} / ${cfg.googleCloudRunServiceName}`;
+    }
+
+    async function loadCompliance() {
+      const data = await api("/api/compliance");
+      const panel = $("compliancePanel");
+      panel.innerHTML = "";
+      const rows = [
+        ["Gemini", data.story?.gemini],
+        ["Google Cloud", data.story?.googleCloud],
+        ["Elastic", data.story?.elastic],
+        ["Local bridge", data.story?.bridge],
+        ["Elastic MCP", data.elasticMcp?.message],
+        ["Track", data.track]
+      ];
+      rows.forEach(([label, value]) => {
+        const div = document.createElement("div");
+        div.innerHTML = `<div class="item-title">${escapeHtml(label)}</div><div class="item-meta">${escapeHtml(value || "")}</div>`;
+        panel.appendChild(div);
+      });
+    }
+
+    async function loadMemory(query = "") {
+      const type = state.type === "all" ? "" : `&type=${encodeURIComponent(state.type)}`;
+      const data = await api(`/api/memory?query=${encodeURIComponent(query)}${type}`);
+      const list = $("memoryList");
+      list.innerHTML = "";
+      (data.memories || []).forEach((doc) => list.appendChild(item(doc, true)));
+      if (!data.memories?.length) list.innerHTML = `<div class="item-meta">No memory found for this user.</div>`;
+      list.querySelectorAll("[data-delete]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          await fetch(`/api/memory/${button.dataset.delete}`, { method: "DELETE", headers: headers() });
+          loadMemory($("memorySearch").value);
+        });
+      });
+    }
+
+    async function loadLogs() {
+      const [actions, failures] = await Promise.all([api("/api/actions"), api("/api/failures")]);
+      renderList("actionList", actions.actions || []);
+      renderList("failureList", failures.failures || []);
+    }
+
+    function renderList(id, docs) {
+      const list = $(id);
+      list.innerHTML = "";
+      docs.forEach((doc) => list.appendChild(item(doc)));
+      if (!docs.length) list.innerHTML = `<div class="item-meta">Nothing logged yet.</div>`;
+    }
+
+    function renderTypeFilters() {
+      const filters = $("typeFilters");
+      filters.innerHTML = "";
+      memoryTypes.forEach((type) => {
+        const button = document.createElement("button");
+        button.className = "tab" + (state.type === type ? " active" : "");
+        button.textContent = type;
+        button.addEventListener("click", () => {
+          state.type = type;
+          renderTypeFilters();
+          loadMemory($("memorySearch").value);
+        });
+        filters.appendChild(button);
+      });
+    }
+
+    async function sendCommand() {
+      const message = $("commandInput").value.trim();
+      if (!message) return;
+      addChat("You", message);
+      const data = await api("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ message, memorySavingEnabled: state.memorySavingEnabled })
+      });
+      addChat("Jarvis", data.response || data.error || "No response.");
+      $("memoryUsed").textContent = data.memoryIndicator || "Used 0 relevant memories from Elastic.";
+      $("lastRetrieved").textContent = data.memoriesUsed?.length
+        ? data.memoriesUsed.map((memory) => memory.title).join(" / ")
+        : "No memories used in the current answer.";
+      if (data.plan?.action) {
+        let confirmed = false;
+        if (data.plan.requires_confirmation) {
+          confirmed = confirm(data.plan.confirmation_message || `Run ${data.plan.action}?`);
+          if (!confirmed) {
+            addChat("Bridge", "Action cancelled before execution.");
+            await logAction(data.plan, {
+              ok: false,
+              message: "User cancelled action.",
+              status: "blocked",
+              demoMode: false
+            });
+          }
+        }
+        if (!data.plan.requires_confirmation || confirmed) {
+          const bridgeResult = await executeLocalAction(data.plan, confirmed);
+          addChat("Bridge", bridgeResult.message);
+          await logAction(data.plan, bridgeResult);
+        }
+      }
+      $("commandInput").value = "";
+      await Promise.all([loadStatus(), loadMemory(), loadLogs()]);
+    }
+
+    function addChat(role, text) {
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.innerHTML = `<strong>${escapeHtml(role)}</strong>${escapeHtml(text)}`;
+      $("chatLog").appendChild(div);
+      $("chatLog").scrollTop = $("chatLog").scrollHeight;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
+    $("saveSession").addEventListener("click", () => {
+      state.userId = $("userId").value.trim();
+      state.deviceId = $("deviceId").value.trim();
+      state.bridgeToken = $("bridgeToken").value.trim();
+      state.memorySavingEnabled = $("memorySavingEnabled").checked;
+      localStorage.setItem("kwtf.userId", state.userId);
+      localStorage.setItem("kwtf.deviceId", state.deviceId);
+      localStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
+      localStorage.setItem("kwtf.memorySavingEnabled", String(state.memorySavingEnabled));
+      loadStatus();
+      loadMemory();
+      loadLogs();
+    });
+    $("useDemo").addEventListener("click", () => { $("commandInput").value = $("demoCommand").value; });
+    $("sendCommand").addEventListener("click", sendCommand);
+    $("searchMemory").addEventListener("click", () => loadMemory($("memorySearch").value));
+    $("refreshMemory").addEventListener("click", () => loadMemory());
+    $("testElastic").addEventListener("click", async () => {
+      const result = await api("/api/elastic/test", { method: "POST" });
+      alert(result.status?.message || result.error || "Elastic test completed.");
+      loadStatus();
+    });
+    $("saveMemory").addEventListener("click", async () => {
+      const content = $("memorySearch").value.trim();
+      if (!content) return;
+      await api("/api/memory", {
+        method: "POST",
+        body: JSON.stringify({
+          content,
+          title: content.slice(0, 60),
+          privacy_level: $("memoryPrivacy").value
+        })
+      });
+      loadMemory();
+    });
+    $("clearMemory").addEventListener("click", async () => {
+      if (!confirm(`Clear Elastic memory for ${state.userId}?`)) return;
+      await api("/api/memory/clear", { method: "POST", body: JSON.stringify({ confirm: true }) });
+      loadMemory();
+    });
+    $("testBridge").addEventListener("click", loadStatus);
+    $("testGemini").addEventListener("click", async () => {
+      const result = await api("/api/gemini/test", { method: "POST" });
+      alert(result.message || result.error || "Gemini test completed.");
+      loadStatus();
+    });
+
+    async function testLocalBridge() {
+      if (!state.bridgeToken) {
+        return {
+          bridgeOnline: false,
+          demoMode: true,
+          message: "Desktop bridge offline or unpaired. Add the local pairing token."
+        };
+      }
+      try {
+        const response = await fetch("http://localhost:8787/api/bridge/status", {
+          headers: { Authorization: `Bearer ${state.bridgeToken}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        return {
+          bridgeOnline: response.ok && data.ok !== false,
+          demoMode: false,
+          message: data.message || (response.ok ? "Desktop bridge online." : data.error || "Bridge rejected pairing token.")
+        };
+      } catch {
+        return {
+          bridgeOnline: false,
+          demoMode: true,
+          message: "Desktop bridge offline. Memory and search remain available."
+        };
+      }
+    }
+
+    async function executeLocalAction(plan, confirmed) {
+      if (!state.bridgeToken) {
+        return { ok: false, demoMode: true, status: "demo_mode", message: "Desktop bridge offline. Action was not executed." };
+      }
+      try {
+        let response = await fetch("http://localhost:8787/api/bridge/action", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${state.bridgeToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ action: plan.action, params: plan.params || {}, confirmed })
+        });
+        let result = await response.json().catch(() => ({}));
+        if (result.confirmation_required && !confirmed) {
+          const localConfirmed = confirm(result.message || `Confirm ${plan.action}?`);
+          if (!localConfirmed) {
+            return { ok: false, demoMode: false, status: "blocked", message: "Action cancelled before execution." };
+          }
+          response = await fetch("http://localhost:8787/api/bridge/action", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${state.bridgeToken}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ action: plan.action, params: plan.params || {}, confirmed: true })
+          });
+          result = await response.json().catch(() => ({}));
+        }
+        return {
+          ok: response.ok && result.ok !== false,
+          demoMode: false,
+          status: response.ok && result.ok !== false ? "completed" : "failed",
+          message: result.message || result.error || (response.ok ? "Action completed." : "Action failed."),
+          data: result
+        };
+      } catch {
+        return { ok: false, demoMode: true, status: "demo_mode", message: "Desktop bridge offline. Action was not executed." };
+      }
+    }
+
+    async function logAction(plan, result) {
+      const payload = {
+        action: plan.action,
+        detail: result.message,
+        status: result.status || (result.ok ? "completed" : result.demoMode ? "demo_mode" : "failed"),
+        safety_level: plan.safety_level || "safe",
+        requires_confirmation: Boolean(plan.requires_confirmation),
+        metadata: { bridge_verified: Boolean(result.ok), demo_mode: Boolean(result.demoMode) }
+      };
+      await api("/api/actions", { method: "POST", body: JSON.stringify(payload) });
+      if (!result.ok && !result.demoMode) {
+        await api("/api/failures", { method: "POST", body: JSON.stringify(payload) });
+      }
+    }
+
+    renderTypeFilters();
+    Promise.all([loadStatus(), loadCompliance(), loadMemory(), loadLogs()]);
+  </script>
+</body>
+</html>
