@@ -4,6 +4,8 @@ keyboard.wtf is a Gemini-powered real-life second brain for your computer. It re
 
 This repository is the fresh submission build for the Google Cloud Rapid Agent Hackathon, targeting the Elastic sponsor track.
 
+Hosted dashboard: https://keyboard-wtf-agent-866230084016.asia-south1.run.app
+
 ## Winning Story
 
 - Gemini is the brain.
@@ -154,7 +156,9 @@ gcloud run deploy keyboard-wtf-agent --source . --region asia-south1 --allow-una
 
 Configure the non-secret Elastic URLs either as Cloud Run environment variables or in the console. Exact steps are in [GOOGLE_CLOUD_RUN_DEPLOY.md](GOOGLE_CLOUD_RUN_DEPLOY.md).
 
-After deployment, add the returned HTTPS URL to Devpost and this README.
+Current deployed service:
+
+`https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
 
 ## Safety and Privacy
 

@@ -99,4 +99,16 @@ Also scan tracked files for known key prefixes without printing the matches. `.e
 - `npm audit --omit=dev`: 17 transitive advisories remain under current `@google/adk`; npm offers only a breaking downgrade of ADK.
 - Public GitHub repository: reachable, but currently empty; this local implementation has not been committed or pushed.
 - Git origin: corrected to `https://github.com/UnknownGod2011/keyboard.wtf.2.git`.
-- Google Cloud CLI: not installed on this machine, so Cloud Run deployment was not attempted.
+- System Google Cloud CLI installation was unavailable; deployment used an ignored portable SDK in the system temp directory.
+
+## Deployment Verification
+
+- Portable Google Cloud CLI 572.0.0 was used from the system temp directory.
+- Google Cloud project `keyboard-wtf-agent` is active.
+- Cloud Run, Cloud Build, Artifact Registry, and Secret Manager APIs were enabled.
+- Cloud Run source deployment passed using the repository Dockerfile.
+- Deployed revision: `keyboard-wtf-agent-00001-d86`.
+- Hosted URL: `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`.
+- Public `/api/health`: passed.
+- Public dashboard HTML: passed.
+- Public bridge-offline/demo behavior: passed.

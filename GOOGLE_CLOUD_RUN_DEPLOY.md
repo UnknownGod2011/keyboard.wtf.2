@@ -2,6 +2,12 @@
 
 Do not deploy until the local test suite passes. Do not commit `.env.local`.
 
+Current service URL:
+
+`https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
+
+Initial deployed revision: `keyboard-wtf-agent-00001-d86`
+
 ## 1. Select the Project
 
 ```powershell

@@ -1,5 +1,7 @@
 # Three-Minute Demo Script
 
+Dashboard: `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
+
 ## 0:00-0:20 - Intro
 
 "keyboard.wtf is Jarvis for your PC. Gemini is the brain, Elastic is the super memory, Cloud Run is the judge-facing web app, and the local Windows bridge is the hands."

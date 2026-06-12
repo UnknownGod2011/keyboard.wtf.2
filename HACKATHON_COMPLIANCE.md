@@ -6,7 +6,7 @@
 - Submission name: keyboard.wtf - Jarvis for your PC
 - Target track: Elastic
 - Public repository: `https://github.com/UnknownGod2011/keyboard.wtf.2`
-- Hosted URL: add the Cloud Run URL after deployment
+- Hosted URL: `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
 - License: MIT, visible at the repository root
 - Demo plan: [DEMO_SCRIPT.md](DEMO_SCRIPT.md)
 
