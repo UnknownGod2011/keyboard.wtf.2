@@ -420,3 +420,6 @@ src/package/tts/piper/
 src/package/tts/voices/*.onnx
 TEMP/
 .tools/
+.playwright-cli/
+.playwright-mcp/
+output/playwright/

@@ -21,7 +21,7 @@ The port can be changed with `LOCAL_BRIDGE_PORT`.
 5. Paste the token in Settings and save.
 6. Click Test Bridge.
 
-The token stays in browser local storage and is sent only to localhost.
+The token stays in browser session storage and is sent only to localhost. It is never attached to Cloud Run API requests.
 
 ## Supported P0/P1 Actions
 
@@ -42,7 +42,7 @@ Risky actions return `confirmation_required` until the browser resubmits with `c
 
 ## CORS
 
-Set `WEB_DASHBOARD_ORIGIN` in the Windows app environment to the exact Cloud Run origin. Local development origins on ports 8080 and 3000 are also supported.
+The official keyboard.wtf Cloud Run origins and local development origins on ports 8080 and 3000 are allowed by default. Set `WEB_DASHBOARD_ORIGIN` only when using a different dashboard origin.
 
 ## Offline Behavior
 

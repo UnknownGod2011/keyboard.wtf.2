@@ -140,7 +140,7 @@
     .panel h2 { margin: 0 0 3px; font-size: 18px; }
     .hint { color: var(--muted); margin: 0 0 14px; }
     .row { display: flex; gap: 8px; align-items: center; }
-    .row > * { flex: 1; }
+    .row > * { flex: 1; min-width: 0; }
     .row .fit { flex: 0 0 auto; }
     .list { display: grid; gap: 8px; margin-top: 12px; }
     .item {
@@ -194,6 +194,10 @@
       h1 { font-size: 36px; }
       .diagram-row { grid-template-columns: 1fr; }
       .arrow { transform: rotate(90deg); }
+    }
+    @media (max-width: 600px) {
+      .row { flex-wrap: wrap; }
+      .row > input, .row > select, .row > textarea { flex-basis: 180px; }
     }
   </style>
 </head>
@@ -295,7 +299,7 @@
             <input id="deviceId" placeholder="device_id">
           </div>
           <div class="row" style="margin-top:8px">
-            <input id="bridgeToken" placeholder="Optional local bridge pairing token">
+            <input id="bridgeToken" type="password" autocomplete="off" placeholder="Optional local bridge pairing token">
             <button class="fit secondary" id="saveSession">Save</button>
           </div>
           <label class="row" style="margin-top:10px; justify-content:flex-start">
@@ -351,7 +355,7 @@
     const state = {
       userId: localStorage.getItem("kwtf.userId") || "",
       deviceId: localStorage.getItem("kwtf.deviceId") || "",
-      bridgeToken: localStorage.getItem("kwtf.bridgeToken") || "",
+      bridgeToken: sessionStorage.getItem("kwtf.bridgeToken") || "",
       memorySavingEnabled: localStorage.getItem("kwtf.memorySavingEnabled") !== "false",
       type: "all"
     };
@@ -362,7 +366,6 @@
       const h = { "content-type": "application/json" };
       if (state.userId) h["x-keyboard-user-id"] = state.userId;
       if (state.deviceId) h["x-keyboard-device-id"] = state.deviceId;
-      if (state.bridgeToken) h["x-bridge-token"] = state.bridgeToken;
       return h;
     }
 
@@ -537,7 +540,7 @@
       state.memorySavingEnabled = $("memorySavingEnabled").checked;
       localStorage.setItem("kwtf.userId", state.userId);
       localStorage.setItem("kwtf.deviceId", state.deviceId);
-      localStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
+      sessionStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
       localStorage.setItem("kwtf.memorySavingEnabled", String(state.memorySavingEnabled));
       loadStatus();
       loadMemory();

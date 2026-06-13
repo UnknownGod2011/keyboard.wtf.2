@@ -965,6 +965,8 @@ public sealed class WebSettingsService : IDisposable
 
         var allowed = AllowedBridgeOrigin();
         if (!string.Equals(origin, allowed, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(origin, "https://keyboard-wtf-agent-866230084016.asia-south1.run.app", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(origin, "https://keyboard-wtf-agent-ivflfs5pta-el.a.run.app", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(origin, "http://localhost:8080", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(origin, "http://localhost:3000", StringComparison.OrdinalIgnoreCase))
             return false;

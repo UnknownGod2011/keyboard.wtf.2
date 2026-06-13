@@ -14,6 +14,7 @@
 - Binds only to `http://localhost`.
 - Rejects non-local requests.
 - Requires `Authorization: Bearer <pairing token>`.
+- Keeps the pasted pairing token in browser session storage and sends it only to localhost, never to Cloud Run.
 - Uses an explicit CORS origin allowlist.
 - Supports token regeneration.
 - Accepts only actions in `LocalBridgeActionRegistry`.
