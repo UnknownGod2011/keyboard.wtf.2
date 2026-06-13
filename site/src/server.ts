@@ -1,4 +1,6 @@
 import express, { type Request } from "express";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv, publicConfig, validateEnv } from "./config/env.js";
@@ -15,6 +17,8 @@ const memoryStore = new ElasticMemoryStore(env);
 const agent = new GeminiAgent(env, memoryStore);
 const app = express();
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const publicDirectory = join(__dirname, "public");
+const windowsInstaller = join(publicDirectory, "downloads", "keyboard-wtf-setup.exe");
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
@@ -245,9 +249,40 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.use(express.static(join(__dirname, "public")));
+app.head("/downloads/keyboard-wtf-setup.exe", async (_, res) => {
+  try {
+    const installer = await stat(windowsInstaller);
+    res.setHeader("content-type", "application/octet-stream");
+    res.setHeader("content-disposition", 'attachment; filename="keyboard-wtf-setup.exe"');
+    res.setHeader("content-length", installer.size);
+    res.setHeader("cache-control", "public, max-age=3600");
+    res.status(200).end();
+  } catch {
+    res.status(404).end();
+  }
+});
+
+app.get("/downloads/keyboard-wtf-setup.exe", async (_, res, next) => {
+  try {
+    await stat(windowsInstaller);
+    res.setHeader("content-type", "application/octet-stream");
+    res.setHeader("content-disposition", 'attachment; filename="keyboard-wtf-setup.exe"');
+    res.setHeader("cache-control", "public, max-age=3600");
+    res.setHeader("transfer-encoding", "chunked");
+    res.status(200);
+    res.flushHeaders();
+
+    const stream = createReadStream(windowsInstaller);
+    stream.on("error", next);
+    stream.pipe(res);
+  } catch {
+    res.status(404).end();
+  }
+});
+
+app.use(express.static(publicDirectory));
 app.get("*", (_, res) => {
-  res.sendFile(join(__dirname, "public", "index.html"));
+  res.sendFile(join(publicDirectory, "index.html"));
 });
 
 await memoryStore.ensureIndices().catch((error) => {
