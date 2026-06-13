@@ -18,6 +18,20 @@ The app starts in the system tray and hosts the bridge at:
 
 The port can be changed with `LOCAL_BRIDGE_PORT`.
 
+Double-click the tray icon to open local settings. Use the tray menu to start **Jarvis mode**, open voice notes, cancel the current operation, or choose **Exit** to close the app.
+
+## Voice Jarvis and Overlay
+
+The Cloud Run dashboard is not the microphone UI. The voice assistant lives in the Windows app.
+
+- Press `Ctrl+Alt+Q` or choose **Jarvis mode** from the tray icon.
+- The Jarvis popup appears at the top of the Windows desktop.
+- The popup shows listening, transcribing, thinking, executing, speaking, done, cancelled, and error states.
+- `Ctrl+Alt+X` cancels the current voice operation.
+- The desktop app handles microphone capture, local transcription, Gemini Live voice conversation, confirmations, and real PC actions.
+
+The website can send paired requests to the bridge and show memory/logs, but it cannot listen to your microphone or draw the desktop overlay by itself.
+
 ## Pair the Dashboard
 
 1. Open the Cloud Run dashboard on the Windows PC.
@@ -40,6 +54,8 @@ The token stays in browser session storage and is sent only to localhost. It is 
 - show desktop.
 
 The bridge maps these public action names to the existing Windows command registry. It never executes model-supplied shell commands.
+
+Local voice Jarvis can still use the existing desktop-only workflows exposed by the Windows app. Cloud-triggered actions intentionally stay on the allowlist above so a hosted page cannot ask the PC to do arbitrary things.
 
 ## Confirmation
 

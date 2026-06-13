@@ -114,6 +114,18 @@ dotnet run --project .\src\KeyboardWtf.csproj
 
 The tray app preserves the existing voice trigger, local transcription, Gemini Live conversation, confirmation system, and Windows automation behavior. The dashboard's **Connect Windows Desktop** button detects the local app and requests permission. Copy/paste pairing remains available as a fallback.
 
+### Using Jarvis as a Voice Assistant
+
+The Cloud Run website is the dashboard and memory console. The actual Jarvis voice assistant runs in the Windows tray app:
+
+1. Install and run the Windows bridge.
+2. Press `Ctrl+Alt+Q` or choose **Jarvis mode** from the tray menu.
+3. The Jarvis overlay appears at the top of the Windows desktop, not inside the browser.
+4. Speak naturally. The desktop app handles the microphone, Gemini Live conversation, confirmations, and local app actions.
+5. The Cloud Run page stays useful for Elastic memory, logs, status, and sending paired bridge requests.
+
+You can open the app from Start/Desktop after installing it. To close it, use the tray icon menu and choose **Exit**. Double-clicking the tray icon opens local settings.
+
 Default shortcuts:
 
 | Shortcut | Action |
@@ -123,6 +135,8 @@ Default shortcuts:
 | `Ctrl+Alt+Q` | Jarvis mode |
 | `Ctrl+Alt+X` | Cancel |
 | `Ctrl+Alt+,` | Settings |
+
+Cloud-triggered actions are intentionally narrower than local voice Jarvis actions. From the Cloud Run dashboard, remote requests go through a P0/P1 allowlist such as open URL, browser tabs, Gmail draft, clipboard, window switch, and show desktop. The installed desktop app can still perform the broader local Jarvis voice workflows it already supported.
 
 ## Elastic Setup
 

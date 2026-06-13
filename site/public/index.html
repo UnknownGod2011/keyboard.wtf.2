@@ -153,7 +153,15 @@
     .hint { color: var(--muted); margin: 0 0 14px; }
     .row { display: flex; gap: 8px; align-items: center; }
     .row > * { flex: 1; min-width: 0; }
-    .row .fit { flex: 0 0 auto; }
+    .row .fit { flex: 0 0 auto; width: auto; }
+    .memory-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(130px, 160px) auto auto;
+      align-items: center;
+    }
+    .memory-controls > * { min-width: 0; width: 100%; }
+    .memory-controls button { width: auto; white-space: nowrap; }
+    .memory-controls select { max-width: 160px; justify-self: stretch; }
     .list { display: grid; gap: 8px; margin-top: 12px; }
     .item {
       border-top: 1px solid var(--line);
@@ -237,6 +245,9 @@
     @media (max-width: 600px) {
       .row { flex-wrap: wrap; }
       .row > input, .row > select, .row > textarea { flex-basis: 180px; }
+      .memory-controls { grid-template-columns: 1fr; }
+      .memory-controls select { max-width: none; }
+      .memory-controls button { width: 100%; }
     }
   </style>
 </head>
@@ -310,7 +321,7 @@
         <section class="panel">
           <h2>Elastic Super Memory</h2>
           <p class="hint">Every query is scoped to the active <code>user_id</code>. No global memory search is exposed.</p>
-          <div class="row">
+          <div class="row memory-controls">
             <input id="memorySearch" placeholder="Search memory, actions, failures...">
             <select id="memoryPrivacy" class="fit" title="Privacy level for manually saved memory">
               <option value="normal">normal</option>
@@ -398,6 +409,23 @@
           </div>
           <div class="item-meta" style="margin-top:10px">Run the tray app, open its Settings, copy the pairing token, paste it in Settings above, and connect again.</div>
           <div class="action-pills" id="bridgeActions"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Desktop Voice Jarvis</h2>
+          <p class="hint">The website is the dashboard. The Windows app is the actual voice assistant and desktop overlay.</p>
+          <div class="item">
+            <div class="item-title">Where the Jarvis popup appears</div>
+            <div class="item-content">After installing and running the Windows bridge, the Jarvis listening/thinking/action popup appears at the top of your Windows desktop, just like the local app. It is not inside the website.</div>
+          </div>
+          <div class="item">
+            <div class="item-title">How to talk to Jarvis</div>
+            <div class="item-content">Use the tray menu or press <code>Ctrl+Alt+Q</code> to start Jarvis mode. The desktop app handles the microphone, Gemini Live voice flow, confirmations, and local app control.</div>
+          </div>
+          <div class="item">
+            <div class="item-title">What the cloud page controls</div>
+            <div class="item-content">The Cloud Run dashboard gives you Elastic memory, chat, status, logs, setup, and remote requests to the paired bridge. Real desktop actions still run locally through the installed app.</div>
+          </div>
         </section>
 
         <section class="panel">
