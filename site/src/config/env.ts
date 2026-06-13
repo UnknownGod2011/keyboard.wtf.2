@@ -8,6 +8,8 @@ export type AppEnv = {
   port: number;
   geminiApiKey?: string;
   geminiModel: string;
+  googleGenAiUseVertexAi: boolean;
+  geminiVertexLocation: string;
   googleCloudProjectId: string;
   googleCloudLocation: string;
   googleCloudRunRegion: string;
@@ -36,6 +38,7 @@ export type EnvValidation = {
 
 const DEFAULTS = {
   geminiModel: "gemini-3.1-pro-preview",
+  geminiVertexLocation: "global",
   googleCloudProjectId: "keyboard-wtf-agent",
   googleCloudLocation: "asia-south1",
   googleCloudRunRegion: "asia-south1",
@@ -71,6 +74,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     port: asNumber(source.PORT, 8080),
     geminiApiKey: clean(source.GEMINI_API_KEY),
     geminiModel: clean(source.GEMINI_MODEL) ?? DEFAULTS.geminiModel,
+    googleGenAiUseVertexAi: asBool(source.GOOGLE_GENAI_USE_VERTEXAI),
+    geminiVertexLocation: clean(source.GEMINI_VERTEX_LOCATION) ?? DEFAULTS.geminiVertexLocation,
     googleCloudProjectId: clean(source.GOOGLE_CLOUD_PROJECT_ID) ?? DEFAULTS.googleCloudProjectId,
     googleCloudLocation: clean(source.GOOGLE_CLOUD_LOCATION) ?? DEFAULTS.googleCloudLocation,
     googleCloudRunRegion: clean(source.GOOGLE_CLOUD_RUN_REGION) ?? DEFAULTS.googleCloudRunRegion,
@@ -97,7 +102,12 @@ export function validateEnv(env: AppEnv): EnvValidation {
   const missingForFullDemo: string[] = [];
   const warnings: string[] = [];
 
-  if (!env.geminiApiKey) missingForFullDemo.push("GEMINI_API_KEY");
+  if (!env.googleGenAiUseVertexAi && !env.geminiApiKey) {
+    missingForFullDemo.push("GEMINI_API_KEY or GOOGLE_GENAI_USE_VERTEXAI=true");
+  }
+  if (env.googleGenAiUseVertexAi && !env.googleCloudProjectId) {
+    missingForFullDemo.push("GOOGLE_CLOUD_PROJECT_ID");
+  }
   if (!env.elasticsearchUrl) missingForFullDemo.push("ELASTICSEARCH_URL");
   if (!env.elasticsearchApiKey) missingForFullDemo.push("ELASTICSEARCH_API_KEY");
   if (!env.elasticAgentBuilderMcpUrl) missingForFullDemo.push("ELASTIC_AGENT_BUILDER_MCP_URL");
@@ -131,7 +141,13 @@ export function publicConfig(env: AppEnv, validation = validateEnv(env)) {
     googleCloudRunRegion: env.googleCloudRunRegion,
     googleCloudRunServiceName: env.googleCloudRunServiceName,
     geminiModel: env.geminiModel,
-    geminiConfigured: Boolean(env.geminiApiKey),
+    geminiConfigured: env.googleGenAiUseVertexAi
+      ? Boolean(env.googleCloudProjectId && env.geminiVertexLocation)
+      : Boolean(env.geminiApiKey),
+    geminiProvider: env.googleGenAiUseVertexAi
+      ? "Vertex AI via Google Cloud Agent Platform"
+      : "Gemini API",
+    geminiVertexLocation: env.googleGenAiUseVertexAi ? env.geminiVertexLocation : "",
     elasticConfigured: Boolean(env.elasticsearchUrl && env.elasticsearchApiKey),
     elasticsearchHost: safeHost(env.elasticsearchUrl),
     kibanaHost: safeHost(env.kibanaUrl),

@@ -191,6 +191,33 @@
       color: #5c3a0d;
       margin: 10px 0;
     }
+    .connect-panel { border-color: #a8c7b4; background: #fbfdfb; }
+    .connect-panel > button { width: 100%; min-height: 44px; font-weight: 750; }
+    .setup-list { display: grid; gap: 7px; margin: 12px 0 0; }
+    .setup-step {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .setup-step:first-child { border-top: 0; }
+    .setup-step.done { color: var(--green); font-weight: 650; }
+    .setup-mark {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: white;
+      font-size: 11px;
+    }
+    .setup-step.done .setup-mark { border-color: var(--green); background: var(--green); color: white; }
+    .action-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .action-pills code { border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; background: white; }
     .compliance {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -250,7 +277,7 @@
       <div class="status"><h3><span id="geminiDot" class="dot"></span>Gemini</h3><p id="geminiStatus">Checking...</p></div>
       <div class="status"><h3><span id="elasticDot" class="dot"></span>Elastic</h3><p id="elasticStatus">Checking...</p></div>
       <div class="status"><h3><span id="bridgeDot" class="dot"></span>Desktop bridge</h3><p id="bridgeStatus">Checking...</p></div>
-      <div class="status"><h3><span class="dot ok"></span>Active user</h3><p><span id="activeUser">...</span><br><span id="activeDevice">...</span><br><span id="memoryCount">0 memories</span></p></div>
+      <div class="status"><h3><span class="dot ok"></span>Active user</h3><p><span id="activeDisplayName"></span><span id="activeUser">...</span><br><span id="activeDevice">...</span><br><span id="memoryCount">0 memories</span></p></div>
     </div>
 
     <div class="grid">
@@ -258,6 +285,7 @@
         <section class="panel">
           <h2>Demo Command Panel</h2>
           <p class="hint">Commands use real Elastic memory. Desktop actions run only when the local bridge is paired and online.</p>
+          <div class="item-meta">Try: remember a link, ask what you worked on today, open a saved link, or search previous failures.</div>
           <div class="chat-log" id="chatLog"></div>
           <textarea id="commandInput" placeholder="Remember this as my to-do link: https://example.com/todo"></textarea>
           <div class="row" style="margin-top:8px">
@@ -306,9 +334,15 @@
         <section class="panel">
           <h2>Settings</h2>
           <p class="hint">Gemini via Google Cloud Agent Platform is the active reasoning model for this hackathon build.</p>
+          <input id="displayName" placeholder="Display name (stored only in this browser)">
           <div class="row">
             <input id="userId" placeholder="user_id">
             <input id="deviceId" placeholder="device_id">
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="secondary" id="useBrowserUser">Use My Browser User</button>
+            <button class="secondary" id="useDemoUser">Use Demo User</button>
+            <button class="secondary" id="resetLocalUser">Reset Local User</button>
           </div>
           <div class="row" style="margin-top:8px">
             <input id="bridgeToken" type="password" autocomplete="off" placeholder="Optional local bridge pairing token">
@@ -318,7 +352,7 @@
             <input id="memorySavingEnabled" type="checkbox" style="width:auto; flex:0 0 auto" checked>
             <span>Save useful chat summaries to Elastic</span>
           </label>
-          <div class="notice">Demo user selection is not authentication. Use one trusted demo user per deployed instance.</div>
+          <div class="notice">Memories are scoped to this <code>user_id</code>. Browser/demo user selection provides data isolation, not production authentication.</div>
           <div class="item">
             <div class="item-title">Elastic indices</div>
             <div class="item-meta" id="indexNames">Loading...</div>
@@ -353,11 +387,30 @@
           <div class="compliance" id="compliancePanel"></div>
         </section>
 
+        <section class="panel connect-panel">
+          <h2>Connect Windows Desktop</h2>
+          <p class="hint">Cloud Run handles Gemini and Elastic. Real PC actions require the localhost Windows bridge on this computer.</p>
+          <button id="connectBridge">Connect Windows Desktop</button>
+          <div class="notice" id="bridgeConnectHelp" aria-live="polite">I will look for the bridge at <code>http://localhost:8787</code>. Your pairing token is sent only to localhost.</div>
+          <div class="row">
+            <a class="download-link" href="/downloads/keyboard-wtf-setup.exe" download>Download Windows Bridge</a>
+            <button class="secondary" id="testBridge">Test Again</button>
+          </div>
+          <div class="item-meta" style="margin-top:10px">Run the tray app, open its Settings, copy the pairing token, paste it in Settings above, and connect again.</div>
+          <div class="action-pills" id="bridgeActions"></div>
+        </section>
+
         <section class="panel">
-          <h2>Local Bridge Setup</h2>
-          <p class="hint">Run the Windows tray app on the demo PC. Open its local settings, copy the bridge pairing token, and paste it above. If offline, this dashboard still shows real Elastic memory and labels desktop actions as demo mode.</p>
-          <p><a class="download-link" href="/downloads/keyboard-wtf-setup.exe" download>Download Windows bridge</a></p>
-          <button class="secondary" id="testBridge">Test Bridge</button>
+          <h2>First-Time Setup</h2>
+          <p class="hint">A quick path from cloud memory to real desktop action.</p>
+          <div class="setup-list">
+            <div class="setup-step" id="checkGemini"><span class="setup-mark">1</span>Test Gemini</div>
+            <div class="setup-step" id="checkElastic"><span class="setup-mark">2</span>Test Elastic</div>
+            <div class="setup-step" id="checkMemory"><span class="setup-mark">3</span>Save a memory</div>
+            <div class="setup-step" id="checkSearch"><span class="setup-mark">4</span>Search memory</div>
+            <div class="setup-step" id="checkBridge"><span class="setup-mark">5</span>Connect Windows Desktop</div>
+            <div class="setup-step" id="checkAction"><span class="setup-mark">6</span>Run a safe action</div>
+          </div>
         </section>
       </div>
     </div>
@@ -365,12 +418,40 @@
 
   <script>
     const memoryTypes = ["all", "semantic_memory", "link_memory", "chat_memory", "action_memory", "failure_memory", "preference_memory", "document_memory", "episodic_memory"];
+    function newLocalId(prefix) {
+      const value = globalThis.crypto?.randomUUID?.().replaceAll("-", "") ||
+        `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+      return `${prefix}_${value.slice(0, 16)}`;
+    }
+
+    function browserIdentity(reset = false) {
+      if (reset || !localStorage.getItem("kwtf.browserUserId")) {
+        localStorage.setItem("kwtf.browserUserId", newLocalId("user"));
+      }
+      if (reset || !localStorage.getItem("kwtf.browserDeviceId")) {
+        localStorage.setItem("kwtf.browserDeviceId", newLocalId("device"));
+      }
+      return {
+        userId: localStorage.getItem("kwtf.browserUserId"),
+        deviceId: localStorage.getItem("kwtf.browserDeviceId")
+      };
+    }
+
+    const initialBrowserIdentity = browserIdentity();
+    if (!localStorage.getItem("kwtf.userId")) {
+      localStorage.setItem("kwtf.userId", initialBrowserIdentity.userId);
+    }
+    if (!localStorage.getItem("kwtf.deviceId")) {
+      localStorage.setItem("kwtf.deviceId", initialBrowserIdentity.deviceId);
+    }
     const state = {
-      userId: localStorage.getItem("kwtf.userId") || "",
-      deviceId: localStorage.getItem("kwtf.deviceId") || "",
+      userId: localStorage.getItem("kwtf.userId") || initialBrowserIdentity.userId,
+      deviceId: localStorage.getItem("kwtf.deviceId") || initialBrowserIdentity.deviceId,
+      displayName: localStorage.getItem("kwtf.displayName") || "",
       bridgeToken: sessionStorage.getItem("kwtf.bridgeToken") || "",
       memorySavingEnabled: localStorage.getItem("kwtf.memorySavingEnabled") !== "false",
-      type: "all"
+      type: "all",
+      defaults: { userId: "tanushshah2006", deviceId: "tanush-windows-demo" }
     };
 
     const $ = (id) => document.getElementById(id);
@@ -413,25 +494,40 @@
     async function loadStatus() {
       const data = await api("/api/status");
       const cfg = data.config || {};
-      state.userId ||= cfg.defaultUserId;
-      state.deviceId ||= cfg.defaultDeviceId;
+      state.defaults = {
+        userId: cfg.defaultUserId || "tanushshah2006",
+        deviceId: cfg.defaultDeviceId || "tanush-windows-demo"
+      };
+      state.userId ||= browserIdentity().userId;
+      state.deviceId ||= browserIdentity().deviceId;
       $("userId").value = state.userId;
       $("deviceId").value = state.deviceId;
+      $("displayName").value = state.displayName;
       $("bridgeToken").value = state.bridgeToken;
       $("memorySavingEnabled").checked = state.memorySavingEnabled;
+      $("activeDisplayName").textContent = state.displayName ? `${state.displayName} / ` : "";
       $("activeUser").textContent = state.userId;
       $("activeDevice").textContent = state.deviceId;
       $("memoryCount").textContent = `${data.memoryCount || 0} memories`;
       setDot("geminiDot", cfg.geminiConfigured);
-      $("geminiStatus").textContent = cfg.geminiConfigured ? cfg.geminiModel : "Server-side GEMINI_API_KEY missing.";
+      $("geminiStatus").textContent = cfg.geminiConfigured
+        ? `${cfg.geminiModel} / ${cfg.geminiProvider || "Gemini"}`
+        : "Gemini is not configured server-side.";
       setDot("elasticDot", data.elastic?.connected, data.elastic?.configured);
       $("elasticStatus").textContent = data.elastic?.message || "Unknown";
       const bridge = await testLocalBridge();
       setDot("bridgeDot", bridge.bridgeOnline, bridge.demoMode);
       $("bridgeStatus").textContent = bridge.message;
+      updateBridgeUi(bridge);
       $("indexNames").textContent = Object.values(cfg.indices || {}).join(", ");
       $("elasticHosts").textContent = [cfg.elasticsearchHost, cfg.kibanaHost].filter(Boolean).join(" / ") || "Not configured";
       $("cloudInfo").textContent = `${cfg.googleCloudProjectId} / ${cfg.googleCloudRunRegion} / ${cfg.googleCloudRunServiceName}`;
+      setChecklist("checkGemini", Boolean(cfg.geminiConfigured && localStorage.getItem("kwtf.geminiTested") === "true"));
+      setChecklist("checkElastic", Boolean(data.elastic?.connected && localStorage.getItem("kwtf.elasticTested") === "true"));
+      setChecklist("checkMemory", Number(data.memoryCount || 0) > 0);
+      setChecklist("checkSearch", localStorage.getItem("kwtf.memorySearched") === "true");
+      setChecklist("checkBridge", bridge.bridgeOnline);
+      setChecklist("checkAction", localStorage.getItem("kwtf.safeActionCompleted") === "true");
     }
 
     async function loadCompliance() {
@@ -547,24 +643,34 @@
     }
 
     $("saveSession").addEventListener("click", () => {
-      state.userId = $("userId").value.trim();
-      state.deviceId = $("deviceId").value.trim();
+      state.userId = $("userId").value.trim() || browserIdentity().userId;
+      state.deviceId = $("deviceId").value.trim() || browserIdentity().deviceId;
+      state.displayName = $("displayName").value.trim();
       state.bridgeToken = $("bridgeToken").value.trim();
       state.memorySavingEnabled = $("memorySavingEnabled").checked;
       localStorage.setItem("kwtf.userId", state.userId);
       localStorage.setItem("kwtf.deviceId", state.deviceId);
+      localStorage.setItem("kwtf.displayName", state.displayName);
       sessionStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
       localStorage.setItem("kwtf.memorySavingEnabled", String(state.memorySavingEnabled));
       loadStatus();
       loadMemory();
       loadLogs();
     });
+    $("useBrowserUser").addEventListener("click", () => selectIdentity(browserIdentity()));
+    $("useDemoUser").addEventListener("click", () => selectIdentity(state.defaults));
+    $("resetLocalUser").addEventListener("click", () => selectIdentity(browserIdentity(true)));
     $("useDemo").addEventListener("click", () => { $("commandInput").value = $("demoCommand").value; });
     $("sendCommand").addEventListener("click", sendCommand);
-    $("searchMemory").addEventListener("click", () => loadMemory($("memorySearch").value));
+    $("searchMemory").addEventListener("click", () => {
+      localStorage.setItem("kwtf.memorySearched", "true");
+      loadMemory($("memorySearch").value);
+      loadStatus();
+    });
     $("refreshMemory").addEventListener("click", () => loadMemory());
     $("testElastic").addEventListener("click", async () => {
       const result = await api("/api/elastic/test", { method: "POST" });
+      if (result.ok) localStorage.setItem("kwtf.elasticTested", "true");
       alert(result.status?.message || result.error || "Elastic test completed.");
       loadStatus();
     });
@@ -579,7 +685,7 @@
           privacy_level: $("memoryPrivacy").value
         })
       });
-      loadMemory();
+      await Promise.all([loadMemory(), loadStatus()]);
     });
     $("clearMemory").addEventListener("click", async () => {
       if (!confirm(`Clear Elastic memory for ${state.userId}?`)) return;
@@ -587,37 +693,101 @@
       loadMemory();
     });
     $("testBridge").addEventListener("click", loadStatus);
+    $("connectBridge").addEventListener("click", connectWindowsDesktop);
     $("testGemini").addEventListener("click", async () => {
       const result = await api("/api/gemini/test", { method: "POST" });
+      if (result.ok) localStorage.setItem("kwtf.geminiTested", "true");
       alert(result.message || result.error || "Gemini test completed.");
       loadStatus();
     });
 
     async function testLocalBridge() {
-      if (!state.bridgeToken) {
-        return {
-          bridgeOnline: false,
-          demoMode: true,
-          message: "Desktop bridge offline or unpaired. Add the local pairing token."
-        };
-      }
       try {
         const response = await fetch("http://localhost:8787/api/bridge/status", {
-          headers: { Authorization: `Bearer ${state.bridgeToken}` }
+          headers: state.bridgeToken ? { Authorization: `Bearer ${state.bridgeToken}` } : {}
         });
         const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          return {
+            bridgeOnline: false,
+            bridgeFound: true,
+            demoMode: true,
+            message: "Windows bridge found. Paste its pairing token in Settings to allow this dashboard."
+          };
+        }
         return {
           bridgeOnline: response.ok && data.ok !== false,
+          bridgeFound: true,
           demoMode: false,
-          message: data.message || (response.ok ? "Desktop bridge online." : data.error || "Bridge rejected pairing token.")
+          message: data.message || (response.ok ? `Connected to ${data.device_id || "Windows desktop"}.` : data.error || "Bridge rejected pairing token."),
+          actions: data.actions || [],
+          deviceId: data.device_id
         };
       } catch {
         return {
           bridgeOnline: false,
+          bridgeFound: false,
           demoMode: true,
-          message: "Desktop bridge offline. Memory and search remain available."
+          message: "Windows bridge not found. Install or run it, then click Connect Windows Desktop again."
         };
       }
+    }
+
+    async function connectWindowsDesktop() {
+      $("bridgeConnectHelp").textContent = "Looking for the Windows bridge on this computer...";
+      let bridge = await testLocalBridge();
+      if (bridge.bridgeFound && !bridge.bridgeOnline && !state.bridgeToken) {
+        $("bridgeConnectHelp").textContent = "Bridge found. Check the Windows permission prompt...";
+        try {
+          const response = await fetch("http://localhost:8787/api/bridge/pair", { method: "POST" });
+          const data = await response.json().catch(() => ({}));
+          if (response.ok && data.pairingToken) {
+            state.bridgeToken = data.pairingToken;
+            sessionStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
+            $("bridgeToken").value = state.bridgeToken;
+            bridge = await testLocalBridge();
+          } else {
+            bridge.message = data.error || "Pairing was not approved. Paste the token manually as a fallback.";
+          }
+        } catch {
+          bridge.message = "The bridge was detected, but automatic pairing was unavailable. Paste its token manually.";
+        }
+      }
+      updateBridgeUi(bridge);
+      setDot("bridgeDot", bridge.bridgeOnline, bridge.demoMode);
+      $("bridgeStatus").textContent = bridge.message;
+      setChecklist("checkBridge", bridge.bridgeOnline);
+      if (bridge.bridgeFound && !bridge.bridgeOnline) $("bridgeToken").focus();
+    }
+
+    function updateBridgeUi(bridge) {
+      $("bridgeConnectHelp").textContent = bridge.message;
+      $("connectBridge").textContent = bridge.bridgeOnline ? "Windows Desktop Connected" : "Connect Windows Desktop";
+      const actions = $("bridgeActions");
+      actions.innerHTML = "";
+      (bridge.actions || []).slice(0, 14).forEach((action) => {
+        const code = document.createElement("code");
+        code.textContent = action.name || action.Name || String(action);
+        actions.appendChild(code);
+      });
+    }
+
+    function selectIdentity(identity) {
+      state.userId = identity.userId;
+      state.deviceId = identity.deviceId;
+      localStorage.setItem("kwtf.userId", state.userId);
+      localStorage.setItem("kwtf.deviceId", state.deviceId);
+      $("userId").value = state.userId;
+      $("deviceId").value = state.deviceId;
+      Promise.all([loadStatus(), loadMemory(), loadLogs()]);
+    }
+
+    function setChecklist(id, done) {
+      const row = $(id);
+      const mark = row.querySelector(".setup-mark");
+      mark.dataset.step ||= mark.textContent;
+      row.classList.toggle("done", done);
+      mark.textContent = done ? "OK" : mark.dataset.step;
     }
 
     async function executeLocalAction(plan, confirmed) {
@@ -671,7 +841,10 @@
         metadata: { bridge_verified: Boolean(result.ok), demo_mode: Boolean(result.demoMode) }
       };
       await api("/api/actions", { method: "POST", body: JSON.stringify(payload) });
-      if (!result.ok && !result.demoMode) {
+      if (result.ok && plan.safety_level === "safe") {
+        localStorage.setItem("kwtf.safeActionCompleted", "true");
+      }
+      if (!result.ok) {
         await api("/api/failures", { method: "POST", body: JSON.stringify(payload) });
       }
     }

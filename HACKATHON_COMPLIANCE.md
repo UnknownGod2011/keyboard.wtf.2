@@ -25,7 +25,7 @@ The model cannot produce a shell command for execution.
 
 ## Gemini
 
-Gemini is the only active reasoning provider in this hackathon build. It:
+Gemini is the only active reasoning provider in this hackathon build. Cloud Run uses Vertex AI service identity through the Google Gen AI SDK; a server-side API-key fallback exists only for local development. Gemini:
 
 - interprets requests;
 - receives only top relevant memory context;
@@ -39,7 +39,7 @@ The Windows app also retains its existing Gemini Live voice conversation.
 
 The project uses the official Google ADK TypeScript package. `elasticMcpClient.ts` creates an authenticated Streamable HTTP `MCPToolset` and discovers tools from Elastic Agent Builder MCP.
 
-The Google Cloud project and Agent Studio app remain the orchestration/compliance setup. The judge-facing backend is prepared for Cloud Run in `asia-south1`.
+The Google Cloud project and Agent Studio app provide the orchestration/compliance setup. The judge-facing backend runs on Cloud Run in `asia-south1`.
 
 ## Elastic
 
@@ -65,7 +65,7 @@ Google ADK MCPToolset
   -> Authorization: ApiKey ...
 ```
 
-`GET /api/compliance` attempts real tool discovery and returns `configured`, `attempted`, `connected`, and discovered tool names. A failed connection is shown honestly. Direct Elasticsearch remains the dependable application memory API.
+`GET /api/compliance` performs real tool discovery and returns `configured`, `attempted`, `connected`, and discovered tool names. The deployed service currently discovers Elastic tools live. A future failed connection is still shown honestly. Direct Elasticsearch remains the dependable application memory API.
 
 ## Web Requirement
 
@@ -85,7 +85,7 @@ Browsers and Cloud Run cannot directly control a user's Windows apps. The local 
 
 Every memory, chat, action, and failure document contains `user_id`. Every normal Elastic query and deletion includes a `user_id` filter. There is no global memory route. Admin routes are disabled by default.
 
-Automated tests prove user A cannot list, search, delete, or clear user B's data.
+Automated and deployed integration tests prove user A cannot list, search, delete, or clear user B's data. First-time visitors receive browser-local user and device IDs; the demo user remains an explicit option. This is data isolation for the hackathon demo, not production authentication.
 
 ## What Is New
 

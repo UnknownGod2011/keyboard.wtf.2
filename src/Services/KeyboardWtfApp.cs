@@ -98,6 +98,25 @@ public sealed class KeyboardWtfApp : IDisposable
 
     public void OpenSettings() => WebSettingsService.Instance.OpenInBrowser();
 
+    public void NotifyCloudDashboardConnected() =>
+        _notifications?.Info("keyboard.wtf", "Cloud Dashboard connected");
+
+    public void NotifyCloudDashboardAction(string action, bool requiresConfirmation)
+    {
+        if (requiresConfirmation)
+            _notifications?.Warning("Cloud dashboard request", $"{action} needs your approval.");
+        else
+            _notifications?.Info("Cloud dashboard request", $"Running allowlisted action: {action}");
+    }
+
+    public bool ConfirmCloudDashboardAction(string action) =>
+        MessageBox.Show(
+            $"keyboard.wtf Cloud Dashboard requested:\n\n{action}\n\nAllow this action?",
+            "Confirm keyboard.wtf action",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+
     public string StartupExecutablePath => ResolveStartupExecutablePath();
 
     public void SyncStartupRegistration() =>

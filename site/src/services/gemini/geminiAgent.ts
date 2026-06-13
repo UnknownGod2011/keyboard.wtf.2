@@ -60,7 +60,13 @@ export class GeminiAgent {
     private readonly env: AppEnv,
     private readonly memoryStore: MemoryStore
   ) {
-    if (env.geminiApiKey) {
+    if (env.googleGenAiUseVertexAi && env.googleCloudProjectId) {
+      this.ai = new GoogleGenAI({
+        vertexai: true,
+        project: env.googleCloudProjectId,
+        location: env.geminiVertexLocation
+      });
+    } else if (env.geminiApiKey) {
       this.ai = new GoogleGenAI({ apiKey: env.geminiApiKey });
     }
   }
@@ -70,7 +76,12 @@ export class GeminiAgent {
   }
 
   async test(): Promise<{ ok: boolean; message: string }> {
-    if (!this.ai) return { ok: false, message: "GEMINI_API_KEY is not configured server-side." };
+    if (!this.ai) {
+      return {
+        ok: false,
+        message: "Gemini is not configured server-side. Enable Vertex AI or add the local API-key fallback."
+      };
+    }
     try {
       const response = await this.ai.models.generateContent({
         model: this.env.geminiModel,
@@ -78,7 +89,7 @@ export class GeminiAgent {
       });
       return { ok: true, message: response.text?.trim() || "Gemini responded." };
     } catch (error) {
-      return { ok: false, message: error instanceof Error ? error.message : "Gemini test failed." };
+      return { ok: false, message: friendlyGeminiError(error) };
     }
   }
 
@@ -307,4 +318,18 @@ intent, response, memory_query, required_memory_types, action, params, safety_le
       /\b(project|deadline|decision|preference|remember|failed|action)\b/i.test(message)
     );
   }
+}
+
+function friendlyGeminiError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (/permission|forbidden|403/i.test(message)) {
+    return "Gemini via Vertex AI is configured, but the Cloud Run service account needs Vertex AI access.";
+  }
+  if (/quota|resource_exhausted|429|credit/i.test(message)) {
+    return "Gemini is configured, but the current Google Cloud quota or billing limit was reached.";
+  }
+  if (/not found|404/i.test(message)) {
+    return "Gemini is configured, but this model is not available in the selected Vertex AI location.";
+  }
+  return "Gemini is configured, but the live connection test failed. Check Cloud Run logs for the server-side detail.";
 }

@@ -15,6 +15,7 @@
 - Rejects non-local requests.
 - Requires `Authorization: Bearer <pairing token>`.
 - Keeps the pasted pairing token in browser session storage and sends it only to localhost, never to Cloud Run.
+- Automatic pairing is restricted by exact-origin CORS and requires an on-device Allow/Deny prompt.
 - Uses an explicit CORS origin allowlist.
 - Supports token regeneration.
 - Accepts only actions in `LocalBridgeActionRegistry`.
@@ -29,7 +30,7 @@ Each action has:
 - confirmation requirement;
 - Windows-only platform support.
 
-Closing a browser tab and preparing a Gmail draft require confirmation. The product never sends email, deletes files, purchases items, or submits forms automatically. No generic shell tool exists.
+Closing a browser tab and preparing a Gmail draft require browser confirmation plus on-device approval. The product never sends email, deletes files, purchases items, or submits forms automatically. No generic shell tool exists.
 
 ## Memory Privacy
 
@@ -42,7 +43,7 @@ Closing a browser tab and preparing a Gmail draft require confirmation. The prod
 
 ## Demo User Limitation
 
-The user selector is a demo session abstraction, not authentication. Deploy one trusted demo user per public hackathon instance. A production release should add Google Identity Platform or another authenticated user-to-session mapping before accepting arbitrary public users.
+Each fresh browser receives a random local `user_id` and `device_id`. Users can switch to the submitted demo user explicitly. This is data isolation, not authentication; a production release should map an authenticated identity to the server-side user context.
 
 ## Logging
 

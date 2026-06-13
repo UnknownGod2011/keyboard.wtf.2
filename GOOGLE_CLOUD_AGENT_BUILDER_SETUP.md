@@ -4,10 +4,14 @@
 
 - Project: `keyboard-wtf-agent`
 - Location: `asia-south1`
+- Vertex AI runtime location: `global`
 - Agent Studio app: `keyboard.wtf Agent`
 - Model: `gemini-3.1-pro-preview`
 
 Enable the required APIs in the Google Cloud console for the selected Agent Platform workflow.
+
+Cloud Run uses its runtime service account with `roles/aiplatform.user`. Set
+`GOOGLE_GENAI_USE_VERTEXAI=true` and keep Gemini credentials server-side.
 
 ## Runtime ADK Integration
 
@@ -36,7 +40,7 @@ The API key stays server-side. The toolset is closed after discovery.
 3. Request `GET /api/compliance`.
 4. Inspect `elasticMcp.connected` and `elasticMcp.toolNames`.
 
-This endpoint performs live discovery. It does not return the API key.
+This endpoint performs live discovery. It does not return the API key. The submitted Cloud Run service currently discovers Elastic Agent Builder MCP tools successfully.
 
 ## Honest Fallback
 

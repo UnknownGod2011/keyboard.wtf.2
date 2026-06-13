@@ -6,7 +6,7 @@ Current service URL:
 
 `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
 
-Initial deployed revision: `keyboard-wtf-agent-00001-d86`
+Canonical submitted service: `keyboard-wtf-agent`
 
 ## 1. Select the Project
 
@@ -18,7 +18,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanage
 
 ## 2. Create Secrets
 
-Create these Secret Manager secrets without putting values into source control:
+Use `scripts/configure-cloud-run.ps1`. It checks whether each secret exists before creation, adds a version without putting the value on the command line, grants the existing runtime service account, and attaches it to the same service.
 
 - `GEMINI_API_KEY`
 - `ELASTICSEARCH_API_KEY`
@@ -36,6 +36,8 @@ GOOGLE_CLOUD_LOCATION=asia-south1
 GOOGLE_CLOUD_RUN_REGION=asia-south1
 GOOGLE_CLOUD_RUN_SERVICE_NAME=keyboard-wtf-agent
 GEMINI_MODEL=gemini-3.1-pro-preview
+GOOGLE_GENAI_USE_VERTEXAI=true
+GEMINI_VERTEX_LOCATION=global
 ELASTICSEARCH_URL=<your Elasticsearch URL>
 KIBANA_URL=<your Kibana URL>
 ELASTIC_AGENT_BUILDER_MCP_URL=<your Kibana URL>/api/agent_builder/mcp
@@ -46,10 +48,10 @@ DEFAULT_DEVICE_ID=tanush-windows-demo
 ## 4. Deploy from Source
 
 ```powershell
-gcloud run deploy keyboard-wtf-agent --source . --region asia-south1 --allow-unauthenticated --set-env-vars GOOGLE_CLOUD_PROJECT_ID=keyboard-wtf-agent,GOOGLE_CLOUD_LOCATION=asia-south1,GOOGLE_CLOUD_RUN_REGION=asia-south1,GOOGLE_CLOUD_RUN_SERVICE_NAME=keyboard-wtf-agent,GEMINI_MODEL=gemini-3.1-pro-preview,DEFAULT_USER_ID=tanushshah2006,DEFAULT_DEVICE_ID=tanush-windows-demo --set-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest,ELASTICSEARCH_API_KEY=ELASTICSEARCH_API_KEY:latest,ELASTIC_MCP_API_KEY=ELASTIC_MCP_API_KEY:latest
+.\scripts\configure-cloud-run.ps1
 ```
 
-Add the three non-secret Elastic URLs in the Cloud Run console before the final revision, or append them with `--set-env-vars`.
+Cloud Run prefers Vertex AI with Application Default Credentials. `GEMINI_API_KEY` remains available for the desktop/local fallback and hackathon configuration, but it is never exposed to the browser.
 
 ## 5. Alternative Container Flow
 

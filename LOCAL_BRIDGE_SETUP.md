@@ -20,14 +20,13 @@ The port can be changed with `LOCAL_BRIDGE_PORT`.
 
 ## Pair the Dashboard
 
-1. Open keyboard.wtf Settings.
-2. Select Desktop Bridge.
-3. Copy the pairing token.
-4. Open the Cloud Run dashboard on the same PC.
-5. Paste the token in Settings and save.
-6. Click Test Bridge.
+1. Open the Cloud Run dashboard on the Windows PC.
+2. Click **Connect Windows Desktop**.
+3. If the bridge is installed and running, approve the Windows permission prompt.
+4. The token is returned only to that browser session and available actions appear automatically.
+5. If automatic pairing is unavailable, open keyboard.wtf Settings, copy the token, paste it into dashboard Settings, and connect again.
 
-The token stays in browser session storage and is sent only to localhost. It is never attached to Cloud Run API requests.
+The token stays in browser session storage and is sent only to localhost. It is never attached to Cloud Run API requests. Pairing accepts only the canonical Cloud Run and local development origins and requires an on-device approval prompt.
 
 ## Supported P0/P1 Actions
 
@@ -44,7 +43,7 @@ The bridge maps these public action names to the existing Windows command regist
 
 ## Confirmation
 
-Risky actions return `confirmation_required` until the browser resubmits with `confirmed: true`. The existing local confirmation system remains active for normal tray-app use.
+Risky actions return `confirmation_required` until the browser confirms, then require a second on-device approval before execution. The existing local confirmation system remains active for normal tray-app use.
 
 ## CORS
 

@@ -51,6 +51,7 @@ With server-side secrets configured:
 - missing token rejected;
 - wrong token rejected;
 - correct token returns status;
+- one-click pairing requires an on-device approval and returns a session-only token;
 - open URL;
 - Chrome next/previous/new/reopen;
 - close tab requires confirmation;
@@ -95,20 +96,23 @@ Also scan tracked files for known key prefixes without printing the matches. `.e
 - Offline action wording: passed with `demo_mode` and no success claim.
 - Docker engine: started successfully.
 - Docker image build: blocked while pulling `node:20-slim` by repeated Docker Hub network timeout; the Dockerfile itself reached the base-image resolution step.
-- Live Gemini, Elasticsearch, and MCP calls: not run because this machine has no server-side runtime secrets configured.
+- Live Vertex AI Gemini, Elasticsearch, and Elastic MCP checks passed against the submitted Cloud Run service.
+- Elastic MCP live discovery returned 22 tools through Google ADK `MCPToolset`.
+- Live memory save, search, recall, action logging, failure logging, delete, and per-user clear passed.
+- Live user isolation passed: user A could not list, search, delete, or clear user B data.
 - `npm audit --omit=dev`: 17 transitive advisories remain under current `@google/adk`; npm offers only a breaking downgrade of ADK.
-- Public GitHub repository: reachable, but currently empty; this local implementation has not been committed or pushed.
-- Git origin: corrected to `https://github.com/UnknownGod2011/keyboard.wtf.2.git`.
-- System Google Cloud CLI installation was unavailable; deployment used an ignored portable SDK in the system temp directory.
+- Public GitHub repository: reachable at `https://github.com/UnknownGod2011/keyboard.wtf.2`.
+- Git origin: `https://github.com/UnknownGod2011/keyboard.wtf.2.git`.
+- Google Cloud CLI deployment uses the existing `keyboard-wtf-agent` service in `asia-south1`.
 
 ## Deployment Verification
 
-- Portable Google Cloud CLI 572.0.0 was used from the system temp directory.
 - Google Cloud project `keyboard-wtf-agent` is active.
 - Cloud Run, Cloud Build, Artifact Registry, and Secret Manager APIs were enabled.
 - Cloud Run source deployment passed using the repository Dockerfile.
-- Deployed revision: `keyboard-wtf-agent-00001-d86`.
 - Hosted URL: `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`.
 - Public `/api/health`: passed.
 - Public dashboard HTML: passed.
 - Public bridge-offline/demo behavior: passed.
+- Runtime secrets are supplied by Secret Manager and never returned to the browser.
+- Gemini uses Vertex AI service identity on Cloud Run, with API-key mode retained only as a server-side local-development fallback.

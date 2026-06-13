@@ -28,6 +28,7 @@ public sealed class WebSettingsService : IDisposable
     private IntentMemoryService _intentMemory;
     private JarvisActionHistoryService _jarvisHistory;
     private string _settingsHtml;
+    private bool _cloudDashboardConnectedNotified;
 
     // Live microphone meter state
     private WaveInEvent _liveMic;
@@ -248,6 +249,10 @@ public sealed class WebSettingsService : IDisposable
             else if (path == "/api/bridge/status" && method == "GET")
             {
                 await ServeBridgeStatus(req, resp);
+            }
+            else if (path == "/api/bridge/pair" && method == "POST")
+            {
+                await PairBridge(req, resp);
             }
             else if (path == "/api/bridge/action" && method == "POST")
             {
@@ -886,6 +891,12 @@ public sealed class WebSettingsService : IDisposable
             return;
         }
 
+        if (!_cloudDashboardConnectedNotified)
+        {
+            _cloudDashboardConnectedNotified = true;
+            _app?.NotifyCloudDashboardConnected();
+        }
+
         await WriteJson(resp, new
         {
             ok = true,
@@ -894,6 +905,37 @@ public sealed class WebSettingsService : IDisposable
             port = Port,
             device_id = Environment.GetEnvironmentVariable("DEFAULT_DEVICE_ID") ?? "tanush-windows-demo",
             actions = LocalBridgeActionRegistry.All,
+        });
+    }
+
+    private async Task PairBridge(HttpListenerRequest req, HttpListenerResponse resp)
+    {
+        var origin = req.Headers["Origin"];
+        if (string.IsNullOrWhiteSpace(origin))
+        {
+            resp.StatusCode = 403;
+            await WriteJson(resp, new { ok = false, error = "Pairing requires an approved dashboard origin." });
+            return;
+        }
+
+        var allowed = _app?.ConfirmCloudDashboardAction("Connect this Cloud Dashboard to the local Windows bridge") == true;
+        if (!allowed)
+        {
+            resp.StatusCode = 403;
+            await WriteJson(resp, new { ok = false, error = "Pairing was declined on the Windows desktop." });
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(KeyboardWtfState.BridgePairingToken))
+            _settings?.RegenerateBridgePairingToken();
+
+        _cloudDashboardConnectedNotified = true;
+        _app?.NotifyCloudDashboardConnected();
+        await WriteJson(resp, new
+        {
+            ok = true,
+            pairingToken = KeyboardWtfState.BridgePairingToken,
+            message = "Windows desktop paired for this browser session."
         });
     }
 
@@ -926,6 +968,8 @@ public sealed class WebSettingsService : IDisposable
             return;
         }
 
+        _app?.NotifyCloudDashboardAction(definition.Name, definition.RequiresConfirmation);
+
         if (definition.RequiresConfirmation && !confirmed)
         {
             resp.StatusCode = 409;
@@ -935,6 +979,18 @@ public sealed class WebSettingsService : IDisposable
                 confirmation_required = true,
                 safety_level = definition.SafetyLevel,
                 message = $"Confirm {definition.Name} before execution.",
+            });
+            return;
+        }
+
+        if (definition.RequiresConfirmation && !_app.ConfirmCloudDashboardAction(definition.Name))
+        {
+            resp.StatusCode = 403;
+            await WriteJson(resp, new
+            {
+                ok = false,
+                safety_level = definition.SafetyLevel,
+                message = $"{definition.Name} was declined on the Windows desktop.",
             });
             return;
         }
@@ -968,6 +1024,7 @@ public sealed class WebSettingsService : IDisposable
             && !string.Equals(origin, "https://keyboard-wtf-agent-866230084016.asia-south1.run.app", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(origin, "https://keyboard-wtf-agent-ivflfs5pta-el.a.run.app", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(origin, "http://localhost:8080", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(origin, "http://localhost:8082", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(origin, "http://localhost:3000", StringComparison.OrdinalIgnoreCase))
             return false;
 

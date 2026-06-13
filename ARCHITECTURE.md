@@ -14,7 +14,7 @@ flowchart LR
   C --> G
   G --> E
   G --> M
-  U -->|"Bearer pairing token"| B
+  U -->|"On-device pairing then session bearer token"| B
   B --> A
   U -->|"Verified result"| C
   C --> E
@@ -22,7 +22,7 @@ flowchart LR
 
 ## Cloud Run Dashboard
 
-Serves the web UI and server-side APIs. It owns Gemini and Elastic credentials. It can search memory and create plans without the Windows app.
+Serves the web UI and server-side APIs. It owns Elastic credentials and uses the Cloud Run runtime identity for Vertex AI. It can search memory and create plans without the Windows app.
 
 ## Gemini Agent
 
@@ -38,7 +38,7 @@ Google ADK performs authenticated tool discovery against Elastic Agent Builder M
 
 ## Browser-to-Bridge Split
 
-A Cloud Run container cannot reach a user's `localhost`. The dashboard browser can. The browser sends the pairing token directly to `http://localhost:8787`, receives a verified result, and logs only the result to Cloud Run.
+A Cloud Run container cannot reach a user's `localhost`. The dashboard browser can. The browser detects `http://localhost:8787`, requests on-device pairing, stores the returned token in session storage, receives verified action results, and logs only results to Cloud Run.
 
 ## Windows Bridge
 

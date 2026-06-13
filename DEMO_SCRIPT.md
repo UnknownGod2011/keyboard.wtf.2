@@ -6,7 +6,7 @@ Dashboard: `https://keyboard-wtf-agent-866230084016.asia-south1.run.app`
 
 "keyboard.wtf is Jarvis for your PC. Gemini is the brain, Elastic is the super memory, Cloud Run is the judge-facing web app, and the local Windows bridge is the hands."
 
-Show the four status cards and active user.
+Show the four status cards and the browser-generated active user. Mention that memories are scoped to that `user_id`, while production authentication is future work.
 
 ## 0:20-0:50 - Remember Context
 
@@ -22,7 +22,7 @@ Use:
 
 `Open my to-do link.`
 
-Show "Used 1 relevant memory from Elastic." Show the structured `open_url` plan and the paired bridge opening the saved URL. If the bridge is intentionally offline, show the honest "Action was not executed" demo-mode state.
+Show the "Used N relevant memories from Elastic" indicator and the structured `open_url` plan. Click **Connect Windows Desktop** and approve the local pairing request before showing the bridge open the saved URL. If the bridge is intentionally offline, show the honest "Action was not executed" demo-mode state.
 
 ## 1:20-1:50 - Daily Recall
 
@@ -34,7 +34,7 @@ Show the user-scoped Elastic retrieval and concise summary. Briefly switch the d
 
 ## 1:50-2:20 - PC Action
 
-Bring Chrome to the foreground and use:
+Show the connected device and available allowlisted actions. Bring Chrome to the foreground and use:
 
 `Open a new tab.`
 

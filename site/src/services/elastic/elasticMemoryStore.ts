@@ -96,7 +96,11 @@ export class ElasticMemoryStore implements MemoryStore {
         id
       });
       if (existing._source?.user_id !== user.userId) return false;
-      await this.client.delete({ index: this.env.elasticIndexMemories, id });
+      await this.client.delete({
+        index: this.env.elasticIndexMemories,
+        id,
+        refresh: true
+      });
       return true;
     } catch {
       return false;
