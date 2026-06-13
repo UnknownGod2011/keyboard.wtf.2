@@ -2,6 +2,12 @@
 
 ## Start the Windows App
 
+Download the current installer from the Cloud Run dashboard or directly from:
+
+`https://keyboard-wtf-agent-866230084016.asia-south1.run.app/downloads/keyboard-wtf-setup.exe`
+
+For source development:
+
 ```powershell
 dotnet run --project .\src\KeyboardWtf.csproj
 ```

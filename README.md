@@ -99,7 +99,11 @@ npm run build
 
 ## Windows App Setup
 
-Prerequisites: Windows and the .NET 8 SDK.
+For the real desktop-action flow, install the current Windows bridge from the hosted dashboard:
+
+`https://keyboard-wtf-agent-866230084016.asia-south1.run.app/downloads/keyboard-wtf-setup.exe`
+
+For source development, prerequisites are Windows and the .NET 8 SDK.
 
 ```powershell
 dotnet restore .\KeyboardWtf.sln

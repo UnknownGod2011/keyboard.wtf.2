@@ -37,6 +37,18 @@
     button.secondary { background: white; color: var(--ink); border-color: var(--line); }
     button.danger { background: var(--red); border-color: var(--red); }
     button:disabled { opacity: .55; cursor: not-allowed; }
+    .download-link {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 6px;
+      background: var(--ink);
+      color: white;
+      padding: 0 12px;
+      text-decoration: none;
+      font-weight: 650;
+    }
     input, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
@@ -344,6 +356,7 @@
         <section class="panel">
           <h2>Local Bridge Setup</h2>
           <p class="hint">Run the Windows tray app on the demo PC. Open its local settings, copy the bridge pairing token, and paste it above. If offline, this dashboard still shows real Elastic memory and labels desktop actions as demo mode.</p>
+          <p><a class="download-link" href="/downloads/keyboard-wtf-setup.exe" download>Download Windows bridge</a></p>
           <button class="secondary" id="testBridge">Test Bridge</button>
         </section>
       </div>
