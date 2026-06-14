@@ -95,9 +95,11 @@ public sealed class CommandRegistry
 
         try
         {
-            return _automation == null
+            var result = _automation == null
                 ? ToolResult(false, $"{toolName} is not a supported keyboard.wtf action yet.", supported: false)
                 : await _automation.ExecuteAsync(toolName, args, token);
+            SetToolCompletionUi(toolName, result);
+            return result;
         }
         catch (OperationCanceledException)
         {
@@ -119,7 +121,37 @@ public sealed class CommandRegistry
         token.ThrowIfCancellationRequested();
         if (_automation == null)
             return ToolResult(false, "The desktop automation service is unavailable.", supported: false);
-        return await _automation.ExecuteApprovedBridgeAsync(name, args, token);
+        var toolName = (name ?? "").Trim();
+        KeyboardWtfState.SetUi(VoiceUiPhase.Executing, KeyboardWtfState.AssistantName, HumanizeTool(toolName));
+        try
+        {
+            var result = await _automation.ExecuteApprovedBridgeAsync(toolName, args, token);
+            SetToolCompletionUi(toolName, result);
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Warning(ex, $"Approved bridge tool failed: {toolName}");
+            KeyboardWtfState.SetUi(VoiceUiPhase.Error, "Action failed", ex.Message);
+            return ToolResult(false, ex.Message);
+        }
+    }
+
+    private static void SetToolCompletionUi(string toolName, IReadOnlyDictionary<string, object> result)
+    {
+        var ok = result.TryGetValue("ok", out var okValue) && okValue is bool success && success;
+        var message = result.TryGetValue("message", out var messageValue)
+            ? Convert.ToString(messageValue)
+            : null;
+        var detail = string.IsNullOrWhiteSpace(message) ? HumanizeTool(toolName) : message;
+        KeyboardWtfState.SetUi(
+            ok ? VoiceUiPhase.Done : VoiceUiPhase.Error,
+            ok ? "Done" : "Action failed",
+            detail);
     }
 
     public async Task HandleVoiceCommandAsync(string transcript)

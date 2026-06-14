@@ -1031,6 +1031,9 @@
     let voiceRecognition = null;
     let voiceFinalTranscript = "";
     let voiceConversationActive = false;
+    let voicePausedForVisibility = false;
+    let voicePendingReply = "";
+    let voiceRunId = 0;
 
     function speechRecognitionConstructor() {
       return globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
@@ -1051,12 +1054,15 @@
         setVoiceState("", "Browser voice unavailable", "Use current Chrome on desktop, or install the Windows Voice App for Gemini Live voice.");
         $("voiceStart").disabled = true;
       } else {
-        $("voiceStart").disabled = false;
+        $("voiceStart").disabled = voiceConversationActive;
       }
     }
 
     function stopVoice() {
+      voiceRunId += 1;
       voiceConversationActive = false;
+      voicePausedForVisibility = false;
+      voicePendingReply = "";
       try { voiceRecognition?.abort(); } catch {}
       globalThis.speechSynthesis?.cancel();
       voiceRecognition = null;
@@ -1064,11 +1070,17 @@
       setVoiceState("", "Ready when you are", "Click Start conversation, then speak naturally. Jarvis will answer aloud.");
     }
 
-    function speakJarvis(text) {
+    function speakJarvis(text, runId = voiceRunId) {
+      if (!voiceConversationActive || runId !== voiceRunId) return;
+      if (document.hidden) {
+        voicePendingReply = text;
+        voicePausedForVisibility = true;
+        setVoiceState("", "Conversation paused", "Return to this dashboard tab and Jarvis will continue.");
+        return;
+      }
       if (!text || !globalThis.speechSynthesis || !globalThis.SpeechSynthesisUtterance) {
         setVoiceState("", "Reply ready", text || "Jarvis completed the request.");
-        voiceConversationActive = false;
-        $("voiceStart").disabled = false;
+        setTimeout(() => startVoiceListening(runId), 350);
         return;
       }
       globalThis.speechSynthesis.cancel();
@@ -1077,15 +1089,17 @@
       utterance.pitch = 1;
       utterance.onstart = () => setVoiceState("speaking", "Jarvis is speaking", text);
       utterance.onend = () => {
-        if (voiceConversationActive) {
-          setVoiceState("", "Your turn", "Listening again in a moment...");
-          setTimeout(startVoiceListening, 350);
+        if (!voiceConversationActive || runId !== voiceRunId) return;
+        if (document.hidden) {
+          voicePausedForVisibility = true;
+          setVoiceState("", "Conversation paused", "Return to this dashboard tab and Jarvis will continue listening.");
         } else {
-          $("voiceStart").disabled = false;
-          setVoiceState("", "Ready for another request", "Click Start conversation to continue.");
+          setVoiceState("", "Your turn", "Listening again in a moment...");
+          setTimeout(() => startVoiceListening(runId), 350);
         }
       };
       utterance.onerror = () => {
+        if (runId !== voiceRunId) return;
         voiceConversationActive = false;
         $("voiceStart").disabled = false;
         setVoiceState("", "Reply ready", text);
@@ -1093,7 +1107,8 @@
       globalThis.speechSynthesis.speak(utterance);
     }
 
-    async function runVoiceTurn(transcript) {
+    async function runVoiceTurn(transcript, runId = voiceRunId) {
+      if (!voiceConversationActive || runId !== voiceRunId) return;
       if (!transcript.trim()) {
         setVoiceState("", "I did not catch that", "Click Start listening and try again.");
         return;
@@ -1101,15 +1116,23 @@
       $("voiceTranscript").textContent = `You: ${transcript}`;
       setVoiceState("thinking", "Jarvis is thinking", "Retrieving relevant Elastic memory and asking Gemini...");
       const result = await sendCommand(transcript);
+      if (!voiceConversationActive || runId !== voiceRunId) return;
       const reply = result?.spokenText || "I could not complete that request.";
       $("voiceTranscript").textContent = `You: ${transcript}\n\nJarvis: ${reply}`;
-      speakJarvis(reply);
+      speakJarvis(reply, runId);
     }
 
-    function startVoiceListening() {
+    function startVoiceListening(runId = voiceRunId) {
       openVoicePanel();
+      if (!voiceConversationActive || runId !== voiceRunId) return;
+      if (document.hidden) {
+        voicePausedForVisibility = true;
+        setVoiceState("", "Conversation paused", "Return to this dashboard tab and Jarvis will continue listening.");
+        return;
+      }
       const Recognition = speechRecognitionConstructor();
       if (!Recognition || voiceRecognition) return;
+      voicePausedForVisibility = false;
       voiceFinalTranscript = "";
       voiceRecognition = new Recognition();
       voiceRecognition.lang = navigator.language || "en-US";
@@ -1117,10 +1140,12 @@
       voiceRecognition.interimResults = true;
       voiceRecognition.maxAlternatives = 1;
       voiceRecognition.onstart = () => {
+        if (!voiceConversationActive || runId !== voiceRunId) return;
         $("voiceTranscript").textContent = "Listening...";
         setVoiceState("listening", "Listening", "Speak naturally. Jarvis will respond when you pause.");
       };
       voiceRecognition.onresult = (event) => {
+        if (!voiceConversationActive || runId !== voiceRunId) return;
         let interim = "";
         for (let index = event.resultIndex; index < event.results.length; index += 1) {
           const text = event.results[index][0]?.transcript || "";
@@ -1130,6 +1155,8 @@
         $("voiceTranscript").textContent = voiceFinalTranscript || interim || "Listening...";
       };
       voiceRecognition.onerror = (event) => {
+        if (runId !== voiceRunId || !voiceConversationActive) return;
+        if (voicePausedForVisibility && event.error === "aborted") return;
         const denied = event.error === "not-allowed" || event.error === "service-not-allowed";
         voiceConversationActive = false;
         $("voiceStart").disabled = false;
@@ -1137,9 +1164,12 @@
           denied ? "Allow microphone access in Chrome, then click Start listening again." : `Speech recognition error: ${event.error || "unknown"}.`);
       };
       voiceRecognition.onend = () => {
+        if (runId !== voiceRunId) return;
         const transcript = voiceFinalTranscript.trim();
         voiceRecognition = null;
-        if (transcript) runVoiceTurn(transcript);
+        if (!voiceConversationActive) return;
+        if (voicePausedForVisibility) return;
+        if (transcript) runVoiceTurn(transcript, runId);
         else if ($("voicePanel").classList.contains("listening")) {
           voiceConversationActive = false;
           $("voiceStart").disabled = false;
@@ -1156,9 +1186,12 @@
     }
 
     function startVoiceConversation() {
+      voiceRunId += 1;
       voiceConversationActive = true;
+      voicePausedForVisibility = false;
+      voicePendingReply = "";
       $("voiceStart").disabled = true;
-      startVoiceListening();
+      startVoiceListening(voiceRunId);
     }
 
     $("voiceLauncher").addEventListener("click", openVoicePanel);
@@ -1170,7 +1203,24 @@
     $("voiceStart").addEventListener("click", startVoiceConversation);
     $("voiceStop").addEventListener("click", stopVoice);
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden && voiceConversationActive) stopVoice();
+      if (!voiceConversationActive) return;
+      if (document.hidden) {
+        voicePausedForVisibility = true;
+        try { voiceRecognition?.abort(); } catch {}
+        voiceRecognition = null;
+        setVoiceState("", "Conversation paused", "Return to this dashboard tab and Jarvis will continue.");
+        return;
+      }
+      if (!voicePausedForVisibility) return;
+      voicePausedForVisibility = false;
+      if (voicePendingReply) {
+        const reply = voicePendingReply;
+        voicePendingReply = "";
+        speakJarvis(reply, voiceRunId);
+      } else if (!$("voicePanel").classList.contains("thinking")
+        && !$("voicePanel").classList.contains("speaking")) {
+        setTimeout(() => startVoiceListening(voiceRunId), 350);
+      }
     });
 
     renderTypeFilters();

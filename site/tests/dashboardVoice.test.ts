@@ -15,6 +15,9 @@ describe("dashboard voice Jarvis", () => {
     expect(html).toContain("speechSynthesis");
     expect(html).toContain("voiceConversationActive = false");
     expect(html).toContain('document.addEventListener("visibilitychange"');
+    expect(html).toContain("voicePausedForVisibility");
+    expect(html).toContain("voicePendingReply");
+    expect(html).toContain("Return to this dashboard tab and Jarvis will continue");
   });
 
   it("keeps the bridge token out of ordinary Cloud Run API headers", async () => {
