@@ -22,7 +22,9 @@ Double-click the tray icon to open local settings. Use the tray menu to start **
 
 ## Voice Jarvis and Overlay
 
-The Cloud Run dashboard is not the microphone UI. The voice assistant lives in the Windows app.
+The Cloud Run dashboard includes a triggered **Talk to Jarvis** panel. In current desktop Chrome, it can listen after a user click, send the transcript to the server-side Gemini + Elastic agent, speak the answer, and continue turn by turn until **Stop** is pressed. Chrome may use its own speech service for transcription.
+
+The installed Windows app remains the full desktop voice experience:
 
 - Press `Ctrl+Alt+Q` or choose **Jarvis mode** from the tray icon.
 - The Jarvis popup appears at the top of the Windows desktop.
@@ -30,7 +32,9 @@ The Cloud Run dashboard is not the microphone UI. The voice assistant lives in t
 - `Ctrl+Alt+X` cancels the current voice operation.
 - The desktop app handles microphone capture, local transcription, Gemini Live voice conversation, confirmations, and real PC actions.
 
-The website can send paired requests to the bridge and show memory/logs, but it cannot listen to your microphone or draw the desktop overlay by itself.
+The website voice panel appears inside the browser. It cannot draw over other Windows apps. The installed Windows app owns the always-on-top desktop overlay, Gemini Live audio stream, tray controls, and broader local action set.
+
+The desktop Gemini Live path needs a Gemini API key saved in local Settings. The key is protected locally and is never copied from the Cloud Run service. Users who do not want to configure a desktop key can still use the website voice panel with server-side Gemini, then pair the bridge for allowlisted PC actions.
 
 ## Pair the Dashboard
 

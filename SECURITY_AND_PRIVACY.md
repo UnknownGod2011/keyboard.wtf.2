@@ -32,6 +32,10 @@ Each action has:
 
 Closing a browser tab and preparing a Gmail draft require browser confirmation plus on-device approval. The product never sends email, deletes files, purchases items, or submits forms automatically. No generic shell tool exists.
 
+## Voice Privacy
+
+The browser voice panel is push-to-start, not an always-listening wake word. Listening ends when the user presses **Stop**, closes the panel, or hides the page. Browser speech recognition may use the browser vendor's speech service. The Windows Gemini Live mode is a separate, locally configured desktop experience.
+
 ## Memory Privacy
 
 - Normal and private memory can be retrieved when relevant.

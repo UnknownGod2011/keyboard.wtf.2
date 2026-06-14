@@ -233,6 +233,91 @@
     .setup-step.done .setup-mark { border-color: var(--green); background: var(--green); color: white; }
     .action-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .action-pills code { border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; background: white; }
+    .voice-launcher {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 30;
+      min-height: 48px;
+      padding: 0 18px;
+      border-color: var(--green);
+      background: var(--green);
+      font-weight: 750;
+      box-shadow: 0 8px 24px rgba(17, 21, 19, .18);
+    }
+    .voice-panel {
+      position: fixed;
+      right: 22px;
+      bottom: 82px;
+      z-index: 31;
+      width: min(390px, calc(100vw - 32px));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 18px 48px rgba(17, 21, 19, .22);
+      padding: 16px;
+    }
+    .voice-panel[hidden] { display: none; }
+    .voice-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .voice-head h2 { margin: 0; font-size: 18px; }
+    .voice-close {
+      width: 34px;
+      min-width: 34px;
+      padding: 0;
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+      font-size: 22px;
+      line-height: 1;
+    }
+    .voice-orb {
+      width: 44px;
+      height: 44px;
+      margin: 16px auto 10px;
+      border: 8px solid #dbe7df;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .voice-panel.listening .voice-orb { animation: voice-pulse 1.1s ease-in-out infinite; background: var(--red); }
+    .voice-panel.thinking .voice-orb { animation: voice-pulse 1.4s ease-in-out infinite; background: var(--blue); }
+    .voice-panel.speaking .voice-orb { animation: voice-pulse .8s ease-in-out infinite; background: var(--green); }
+    @keyframes voice-pulse {
+      0%, 100% { transform: scale(.9); opacity: .72; }
+      50% { transform: scale(1.12); opacity: 1; }
+    }
+    .voice-status { text-align: center; font-weight: 750; }
+    .voice-detail { min-height: 42px; margin: 6px 0 12px; color: var(--muted); text-align: center; overflow-wrap: anywhere; }
+    .voice-transcript {
+      min-height: 58px;
+      max-height: 140px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfb;
+      padding: 10px;
+      color: #2e3833;
+    }
+    .voice-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }
+    .voice-privacy { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+    .voice-cta {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid #b8d5c2;
+      border-radius: 7px;
+      background: #f4faf6;
+    }
+    .voice-cta button { background: var(--green); border-color: var(--green); }
+    .command-examples {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+    .command-examples summary { cursor: pointer; color: var(--muted); font-weight: 650; }
+    .command-examples .row { margin-top: 9px; }
     .compliance {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -255,6 +340,10 @@
       .memory-controls { grid-template-columns: 1fr; }
       .memory-controls select { max-width: none; }
       .memory-controls button { width: 100%; }
+      .voice-launcher { right: 16px; bottom: 16px; }
+      .voice-panel { left: 16px; right: 16px; bottom: 74px; width: auto; }
+      .voice-cta { grid-template-columns: 1fr; }
+      .voice-cta button { width: 100%; }
     }
   </style>
 </head>
@@ -301,26 +390,38 @@
     <div class="grid">
       <div>
         <section class="panel">
-          <h2>Demo Command Panel</h2>
-          <p class="hint">Commands use real Elastic memory. Desktop actions run only when the local bridge is paired and online.</p>
-          <div class="item-meta">Try: remember a link, ask what you worked on today, open a saved link, or search previous failures.</div>
+          <h2>Jarvis Conversation</h2>
+          <p class="hint">Type here or use the floating <strong>Talk to Jarvis</strong> button. Commands use real Gemini and Elastic memory. Desktop actions run only when the local bridge is paired and online.</p>
+          <div class="item-meta">Try speaking naturally: remember a link, ask what you worked on today, open a saved link, or search previous failures.</div>
+          <div class="voice-cta">
+            <button id="openVoiceInline" type="button">Talk to Jarvis</button>
+            <div>
+              <div class="item-title">Have a real voice conversation</div>
+              <div class="item-meta">Click once, allow the microphone, and speak. Jarvis answers aloud and keeps the conversation going until you press Stop.</div>
+            </div>
+          </div>
           <div class="chat-log" id="chatLog"></div>
           <textarea id="commandInput" placeholder="Remember this as my to-do link: https://example.com/todo"></textarea>
           <div class="row" style="margin-top:8px">
-            <select id="demoCommand">
-              <option value="">Choose a demo command...</option>
-              <option>Remember this as my to-do link: https://example.com/todo</option>
-              <option>Open my to-do link.</option>
-              <option>What did I work on today?</option>
-              <option>Search my saved actions.</option>
-              <option>What failed last time?</option>
-              <option>Use what you remember about this project.</option>
-              <option>Remember this hackathon deadline: June 11, 2026 at 2:00 PM PT.</option>
-              <option>Find the last thing I saved about Elastic.</option>
-            </select>
-            <button class="fit secondary" id="useDemo">Use</button>
-            <button class="fit" id="sendCommand">Send</button>
+            <button class="fit" id="sendCommand">Send typed message</button>
           </div>
+          <details class="command-examples">
+            <summary>Optional example commands</summary>
+            <div class="row">
+              <select id="demoCommand">
+                <option value="">Choose an example...</option>
+                <option>Remember this as my to-do link: https://example.com/todo</option>
+                <option>Open my to-do link.</option>
+                <option>What did I work on today?</option>
+                <option>Search my saved actions.</option>
+                <option>What failed last time?</option>
+                <option>Use what you remember about this project.</option>
+                <option>Remember this hackathon deadline: June 11, 2026 at 2:00 PM PT.</option>
+                <option>Find the last thing I saved about Elastic.</option>
+              </select>
+              <button class="fit secondary" id="useDemo">Put in message box</button>
+            </div>
+          </details>
           <div class="notice" id="memoryUsed">Used 0 relevant memories from Elastic.</div>
           <div class="item-meta" id="lastRetrieved">No memories used in the current answer.</div>
         </section>
@@ -457,6 +558,26 @@
       </div>
     </div>
   </main>
+
+  <button class="voice-launcher" id="voiceLauncher" type="button">Talk to Jarvis</button>
+  <aside class="voice-panel" id="voicePanel" aria-label="Jarvis voice conversation" aria-live="polite" hidden>
+    <div class="voice-head">
+      <div>
+        <h2>Jarvis Voice</h2>
+        <div class="item-meta">Gemini brain + Elastic memory + paired desktop actions</div>
+      </div>
+      <button class="voice-close" id="voiceClose" type="button" aria-label="Close Jarvis voice panel">&times;</button>
+    </div>
+    <div class="voice-orb" aria-hidden="true"></div>
+    <div class="voice-status" id="voiceStatus">Ready when you are</div>
+    <div class="voice-detail" id="voiceDetail">Click Start conversation, then speak naturally. Jarvis will answer aloud and listen for your next turn.</div>
+    <div class="voice-transcript" id="voiceTranscript">Your conversation will appear here.</div>
+    <div class="voice-actions">
+      <button id="voiceStart" type="button">Start conversation</button>
+      <button class="secondary" id="voiceStop" type="button">Stop</button>
+    </div>
+    <p class="voice-privacy">Listening starts only after your click and ends when you press Stop or close this panel. Chrome may use its speech service for transcription. Use the Windows Voice App for the full Gemini Live desktop overlay experience.</p>
+  </aside>
 
   <script>
     const memoryTypes = ["all", "semantic_memory", "link_memory", "chat_memory", "action_memory", "failure_memory", "preference_memory", "document_memory", "episodic_memory"];
@@ -635,41 +756,57 @@
       });
     }
 
-    async function sendCommand() {
-      const message = $("commandInput").value.trim();
+    async function sendCommand(messageOverride = "") {
+      const message = typeof messageOverride === "string" && messageOverride.trim()
+        ? messageOverride.trim()
+        : $("commandInput").value.trim();
       if (!message) return;
+      $("sendCommand").disabled = true;
       addChat("You", message);
-      const data = await api("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({ message, memorySavingEnabled: state.memorySavingEnabled })
-      });
-      addChat("Jarvis", data.response || data.error || "No response.");
-      $("memoryUsed").textContent = data.memoryIndicator || "Used 0 relevant memories from Elastic.";
-      $("lastRetrieved").textContent = data.memoriesUsed?.length
-        ? data.memoriesUsed.map((memory) => memory.title).join(" / ")
-        : "No memories used in the current answer.";
-      if (data.plan?.action) {
-        let confirmed = false;
-        if (data.plan.requires_confirmation) {
-          confirmed = confirm(data.plan.confirmation_message || `Run ${data.plan.action}?`);
-          if (!confirmed) {
-            addChat("Bridge", "Action cancelled before execution.");
-            await logAction(data.plan, {
-              ok: false,
-              message: "User cancelled action.",
-              status: "blocked",
-              demoMode: false
-            });
+      let data = {};
+      let bridgeResult = null;
+      try {
+        data = await api("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({ message, memorySavingEnabled: state.memorySavingEnabled })
+        });
+        addChat("Jarvis", data.response || data.error || "No response.");
+        $("memoryUsed").textContent = data.memoryIndicator || "Used 0 relevant memories from Elastic.";
+        $("lastRetrieved").textContent = data.memoriesUsed?.length
+          ? data.memoriesUsed.map((memory) => memory.title).join(" / ")
+          : "No memories used in the current answer.";
+        if (data.plan?.action) {
+          let confirmed = false;
+          if (data.plan.requires_confirmation) {
+            confirmed = confirm(data.plan.confirmation_message || `Run ${data.plan.action}?`);
+            if (!confirmed) {
+              bridgeResult = {
+                ok: false,
+                message: "Action cancelled before execution.",
+                status: "blocked",
+                demoMode: false
+              };
+              addChat("Bridge", bridgeResult.message);
+              await logAction(data.plan, bridgeResult);
+            }
+          }
+          if (!data.plan.requires_confirmation || confirmed) {
+            bridgeResult = await executeLocalAction(data.plan, confirmed);
+            addChat("Bridge", bridgeResult.message);
+            await logAction(data.plan, bridgeResult);
           }
         }
-        if (!data.plan.requires_confirmation || confirmed) {
-          const bridgeResult = await executeLocalAction(data.plan, confirmed);
-          addChat("Bridge", bridgeResult.message);
-          await logAction(data.plan, bridgeResult);
-        }
+        $("commandInput").value = "";
+        await Promise.all([loadStatus(), loadMemory(), loadLogs()]);
+        const spokenText = [data.response || data.error, bridgeResult?.message].filter(Boolean).join(" ");
+        return { data, bridgeResult, spokenText };
+      } catch {
+        const messageText = "Jarvis could not reach the cloud service. Please try again.";
+        addChat("Jarvis", messageText);
+        return { data: { ok: false }, bridgeResult: null, spokenText: messageText };
+      } finally {
+        $("sendCommand").disabled = false;
       }
-      $("commandInput").value = "";
-      await Promise.all([loadStatus(), loadMemory(), loadLogs()]);
     }
 
     function addChat(role, text) {
@@ -703,7 +840,7 @@
     $("useDemoUser").addEventListener("click", () => selectIdentity(state.defaults));
     $("resetLocalUser").addEventListener("click", () => selectIdentity(browserIdentity(true)));
     $("useDemo").addEventListener("click", () => { $("commandInput").value = $("demoCommand").value; });
-    $("sendCommand").addEventListener("click", sendCommand);
+    $("sendCommand").addEventListener("click", () => sendCommand());
     $("searchMemory").addEventListener("click", () => {
       localStorage.setItem("kwtf.memorySearched", "true");
       loadMemory($("memorySearch").value);
@@ -890,6 +1027,151 @@
         await api("/api/failures", { method: "POST", body: JSON.stringify(payload) });
       }
     }
+
+    let voiceRecognition = null;
+    let voiceFinalTranscript = "";
+    let voiceConversationActive = false;
+
+    function speechRecognitionConstructor() {
+      return globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
+    }
+
+    function setVoiceState(phase, status, detail) {
+      const panel = $("voicePanel");
+      panel.classList.remove("listening", "thinking", "speaking");
+      if (phase) panel.classList.add(phase);
+      $("voiceStatus").textContent = status;
+      $("voiceDetail").textContent = detail;
+    }
+
+    function openVoicePanel() {
+      $("voicePanel").hidden = false;
+      const Recognition = speechRecognitionConstructor();
+      if (!Recognition) {
+        setVoiceState("", "Browser voice unavailable", "Use current Chrome on desktop, or install the Windows Voice App for Gemini Live voice.");
+        $("voiceStart").disabled = true;
+      } else {
+        $("voiceStart").disabled = false;
+      }
+    }
+
+    function stopVoice() {
+      voiceConversationActive = false;
+      try { voiceRecognition?.abort(); } catch {}
+      globalThis.speechSynthesis?.cancel();
+      voiceRecognition = null;
+      $("voiceStart").disabled = false;
+      setVoiceState("", "Ready when you are", "Click Start conversation, then speak naturally. Jarvis will answer aloud.");
+    }
+
+    function speakJarvis(text) {
+      if (!text || !globalThis.speechSynthesis || !globalThis.SpeechSynthesisUtterance) {
+        setVoiceState("", "Reply ready", text || "Jarvis completed the request.");
+        voiceConversationActive = false;
+        $("voiceStart").disabled = false;
+        return;
+      }
+      globalThis.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.onstart = () => setVoiceState("speaking", "Jarvis is speaking", text);
+      utterance.onend = () => {
+        if (voiceConversationActive) {
+          setVoiceState("", "Your turn", "Listening again in a moment...");
+          setTimeout(startVoiceListening, 350);
+        } else {
+          $("voiceStart").disabled = false;
+          setVoiceState("", "Ready for another request", "Click Start conversation to continue.");
+        }
+      };
+      utterance.onerror = () => {
+        voiceConversationActive = false;
+        $("voiceStart").disabled = false;
+        setVoiceState("", "Reply ready", text);
+      };
+      globalThis.speechSynthesis.speak(utterance);
+    }
+
+    async function runVoiceTurn(transcript) {
+      if (!transcript.trim()) {
+        setVoiceState("", "I did not catch that", "Click Start listening and try again.");
+        return;
+      }
+      $("voiceTranscript").textContent = `You: ${transcript}`;
+      setVoiceState("thinking", "Jarvis is thinking", "Retrieving relevant Elastic memory and asking Gemini...");
+      const result = await sendCommand(transcript);
+      const reply = result?.spokenText || "I could not complete that request.";
+      $("voiceTranscript").textContent = `You: ${transcript}\n\nJarvis: ${reply}`;
+      speakJarvis(reply);
+    }
+
+    function startVoiceListening() {
+      openVoicePanel();
+      const Recognition = speechRecognitionConstructor();
+      if (!Recognition || voiceRecognition) return;
+      voiceFinalTranscript = "";
+      voiceRecognition = new Recognition();
+      voiceRecognition.lang = navigator.language || "en-US";
+      voiceRecognition.continuous = false;
+      voiceRecognition.interimResults = true;
+      voiceRecognition.maxAlternatives = 1;
+      voiceRecognition.onstart = () => {
+        $("voiceTranscript").textContent = "Listening...";
+        setVoiceState("listening", "Listening", "Speak naturally. Jarvis will respond when you pause.");
+      };
+      voiceRecognition.onresult = (event) => {
+        let interim = "";
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          const text = event.results[index][0]?.transcript || "";
+          if (event.results[index].isFinal) voiceFinalTranscript += text;
+          else interim += text;
+        }
+        $("voiceTranscript").textContent = voiceFinalTranscript || interim || "Listening...";
+      };
+      voiceRecognition.onerror = (event) => {
+        const denied = event.error === "not-allowed" || event.error === "service-not-allowed";
+        voiceConversationActive = false;
+        $("voiceStart").disabled = false;
+        setVoiceState("", denied ? "Microphone permission needed" : "Voice input stopped",
+          denied ? "Allow microphone access in Chrome, then click Start listening again." : `Speech recognition error: ${event.error || "unknown"}.`);
+      };
+      voiceRecognition.onend = () => {
+        const transcript = voiceFinalTranscript.trim();
+        voiceRecognition = null;
+        if (transcript) runVoiceTurn(transcript);
+        else if ($("voicePanel").classList.contains("listening")) {
+          voiceConversationActive = false;
+          $("voiceStart").disabled = false;
+          setVoiceState("", "I did not catch that", "Click Start listening and try again.");
+        }
+      };
+      try {
+        voiceRecognition.start();
+      } catch {
+        voiceConversationActive = false;
+        $("voiceStart").disabled = false;
+        setVoiceState("", "Voice input is busy", "Wait a moment, then click Start listening again.");
+      }
+    }
+
+    function startVoiceConversation() {
+      voiceConversationActive = true;
+      $("voiceStart").disabled = true;
+      startVoiceListening();
+    }
+
+    $("voiceLauncher").addEventListener("click", openVoicePanel);
+    $("openVoiceInline").addEventListener("click", openVoicePanel);
+    $("voiceClose").addEventListener("click", () => {
+      stopVoice();
+      $("voicePanel").hidden = true;
+    });
+    $("voiceStart").addEventListener("click", startVoiceConversation);
+    $("voiceStop").addEventListener("click", stopVoice);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && voiceConversationActive) stopVoice();
+    });
 
     renderTypeFilters();
     Promise.all([loadStatus(), loadCompliance(), loadMemory(), loadLogs()]);
