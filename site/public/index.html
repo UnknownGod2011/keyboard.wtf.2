@@ -201,6 +201,13 @@
     }
     .connect-panel { border-color: #a8c7b4; background: #fbfdfb; }
     .connect-panel > button { width: 100%; min-height: 44px; font-weight: 750; }
+    .quick-start {
+      margin: 12px 0;
+      padding-left: 24px;
+      color: #2e3833;
+    }
+    .quick-start li { margin: 8px 0; padding-left: 3px; }
+    .quick-start strong { color: var(--ink); }
     .setup-list { display: grid; gap: 7px; margin: 12px 0 0; }
     .setup-step {
       display: flex;
@@ -401,13 +408,20 @@
         <section class="panel connect-panel">
           <h2>Connect Windows Desktop</h2>
           <p class="hint">Cloud Run handles Gemini and Elastic. Real PC actions require the localhost Windows bridge on this computer.</p>
+          <ol class="quick-start">
+            <li><strong>Download and install</strong> the Windows Bridge on the PC you want Jarvis to control.</li>
+            <li><strong>Open keyboard.wtf</strong> from Start or the desktop shortcut. It stays available in the Windows system tray.</li>
+            <li><strong>Return here and connect.</strong> Click the button below, then approve the connection popup on Windows.</li>
+            <li><strong>Start talking.</strong> Press <code>Ctrl+Alt+Q</code> or choose <strong>Jarvis mode</strong> from the tray menu. The Jarvis overlay appears at the top of your Windows desktop.</li>
+            <li><strong>Stop or close.</strong> Press <code>Ctrl+Alt+X</code> to cancel the current operation. To close keyboard.wtf completely, right-click its tray icon and choose <strong>Exit</strong>.</li>
+          </ol>
           <button id="connectBridge">Connect Windows Desktop</button>
           <div class="notice" id="bridgeConnectHelp" aria-live="polite">I will look for the bridge at <code>http://localhost:8787</code>. Your pairing token is sent only to localhost.</div>
           <div class="row">
-            <a class="download-link" href="/downloads/keyboard-wtf-setup.exe" download>Download Windows Bridge</a>
+            <a class="download-link" href="/downloads/keyboard-wtf-setup.exe" download>Download Windows Voice App</a>
             <button class="secondary" id="testBridge">Test Again</button>
           </div>
-          <div class="item-meta" style="margin-top:10px">Run the tray app, open its Settings, copy the pairing token, paste it in Settings above, and connect again.</div>
+          <div class="item-meta" style="margin-top:10px">Automatic pairing is preferred. If it is unavailable, double-click the tray icon to open local Settings, copy the pairing token, paste it in dashboard Settings above, and connect again.</div>
           <div class="action-pills" id="bridgeActions"></div>
         </section>
 
