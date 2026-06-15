@@ -614,7 +614,10 @@
       bridgeToken: sessionStorage.getItem("kwtf.bridgeToken") || "",
       memorySavingEnabled: localStorage.getItem("kwtf.memorySavingEnabled") !== "false",
       type: "all",
-      defaults: { userId: "tanushshah2006", deviceId: "tanush-windows-demo" }
+      defaults: { userId: "tanushshah2006", deviceId: "tanush-windows-demo" },
+      conversationId: crypto.randomUUID(),
+      geminiModel: "",
+      lastWasSuggested: false
     };
 
     const $ = (id) => document.getElementById(id);
@@ -661,6 +664,7 @@
         userId: cfg.defaultUserId || "tanushshah2006",
         deviceId: cfg.defaultDeviceId || "tanush-windows-demo"
       };
+      state.geminiModel = cfg.geminiModel || "";
       state.userId ||= browserIdentity().userId;
       state.deviceId ||= browserIdentity().deviceId;
       $("userId").value = state.userId;
@@ -763,6 +767,17 @@
       if (!message) return;
       $("sendCommand").disabled = true;
       addChat("You", message);
+      const wasSuggested = state.lastWasSuggested;
+      state.lastWasSuggested = false;
+      if (typeof pendo !== "undefined" && pendo.trackAgent) {
+        pendo.trackAgent("prompt", {
+          agentId: "ixcz4Iq40Y8OvKFmmEzN4ZmizO8",
+          conversationId: state.conversationId,
+          messageId: crypto.randomUUID(),
+          content: message,
+          suggestedPrompt: wasSuggested
+        });
+      }
       let data = {};
       let bridgeResult = null;
       try {
@@ -771,6 +786,16 @@
           body: JSON.stringify({ message, memorySavingEnabled: state.memorySavingEnabled })
         });
         addChat("Jarvis", data.response || data.error || "No response.");
+        if (typeof pendo !== "undefined" && pendo.trackAgent) {
+          pendo.trackAgent("agent_response", {
+            agentId: "ixcz4Iq40Y8OvKFmmEzN4ZmizO8",
+            conversationId: state.conversationId,
+            messageId: crypto.randomUUID(),
+            content: data.response || data.error || "No response.",
+            modelUsed: state.geminiModel,
+            toolsUsed: data.plan?.action ? [data.plan.action] : []
+          });
+        }
         $("memoryUsed").textContent = data.memoryIndicator || "Used 0 relevant memories from Elastic.";
         $("lastRetrieved").textContent = data.memoriesUsed?.length
           ? data.memoriesUsed.map((memory) => memory.title).join(" / ")
@@ -839,7 +864,7 @@
     $("useBrowserUser").addEventListener("click", () => selectIdentity(browserIdentity()));
     $("useDemoUser").addEventListener("click", () => selectIdentity(state.defaults));
     $("resetLocalUser").addEventListener("click", () => selectIdentity(browserIdentity(true)));
-    $("useDemo").addEventListener("click", () => { $("commandInput").value = $("demoCommand").value; });
+    $("useDemo").addEventListener("click", () => { $("commandInput").value = $("demoCommand").value; state.lastWasSuggested = true; });
     $("sendCommand").addEventListener("click", () => sendCommand());
     $("searchMemory").addEventListener("click", () => {
       localStorage.setItem("kwtf.memorySearched", "true");
