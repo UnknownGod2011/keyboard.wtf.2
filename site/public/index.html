@@ -4,6 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>keyboard.wtf - Jarvis for your PC</title>
+  <script>
+(function(apiKey){
+    (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];
+    v=['initialize','identify','updateOptions','pageLoad','track','trackAgent'];for(w=0,x=v.length;w<x;++w)(function(m){
+    o[m]=o[m]||function(){o._q[m===v[0]?'unshift':'push']([m].concat([].slice.call(arguments,0)));};})(v[w]);
+    y=e.createElement(n);y.async=!0;y.src='https://cdn.pendo.io/agent/static/'+apiKey+'/pendo.js';
+    z=e.getElementsByTagName(n)[0];z.parentNode.insertBefore(y,z);})(window,document,'script','pendo');
+})('1bae74a3-d94d-47d2-afb0-531bdd2d7dc4');
+</script>
   <style>
     :root {
       --bg: #f7f8f6;
@@ -580,6 +589,12 @@
   </aside>
 
   <script>
+    pendo.initialize({
+      visitor: {
+        id: ''
+      }
+    });
+
     const memoryTypes = ["all", "semantic_memory", "link_memory", "chat_memory", "action_memory", "failure_memory", "preference_memory", "document_memory", "episodic_memory"];
     function newLocalId(prefix) {
       const value = globalThis.crypto?.randomUUID?.().replaceAll("-", "") ||
@@ -616,6 +631,13 @@
       type: "all",
       defaults: { userId: "tanushshah2006", deviceId: "tanush-windows-demo" }
     };
+
+    pendo.identify({
+      visitor: {
+        id: state.userId,
+        deviceId: state.deviceId
+      }
+    });
 
     const $ = (id) => document.getElementById(id);
 
@@ -832,6 +854,12 @@
       localStorage.setItem("kwtf.displayName", state.displayName);
       sessionStorage.setItem("kwtf.bridgeToken", state.bridgeToken);
       localStorage.setItem("kwtf.memorySavingEnabled", String(state.memorySavingEnabled));
+      pendo.identify({
+        visitor: {
+          id: state.userId,
+          deviceId: state.deviceId
+        }
+      });
       loadStatus();
       loadMemory();
       loadLogs();
@@ -958,6 +986,12 @@
       localStorage.setItem("kwtf.deviceId", state.deviceId);
       $("userId").value = state.userId;
       $("deviceId").value = state.deviceId;
+      pendo.identify({
+        visitor: {
+          id: state.userId,
+          deviceId: state.deviceId
+        }
+      });
       Promise.all([loadStatus(), loadMemory(), loadLogs()]);
     }
 
